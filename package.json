@@ -37,7 +37,8 @@
     "coveralls": "cat coverage/lcov.info | coveralls",
     "prebuild": "rm -rf lib",
     "build": "babel src -d lib --no-comments",
-    "prepublish": "npm run build"
+    "watch": "npm run build -- -w",
+    "prepublish": "npm test && npm run build"
   },
   "devDependencies": {
     "ava": "0.15.2",
@@ -58,6 +59,9 @@
       "es2015",
       "stage-2"
     ]
+  },
+  "standard": {
+    "parser": "babel-eslint"
   },
   "ava": {
     "failFast": true,
