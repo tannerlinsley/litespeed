@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/jsonmaur/airflow.svg?branch=master)](https://travis-ci.org/jsonmaur/airflow)
 [![Coverage Status](https://coveralls.io/repos/github/jsonmaur/airflow/badge.svg?branch=master)](https://coveralls.io/github/jsonmaur/airflow?branch=master)
 [![Code Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+[![Chat Room](https://badges.gitter.im/jsonmaur/airflow.svg)](https://gitter.im/jsonmaur/airflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 > *This package is under active development.*
 
