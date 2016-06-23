@@ -1,1 +1,1 @@
-module.exports = () => console.log('welcome')
+module.exports = { error: 'use the cli instead!' }
