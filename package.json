@@ -1,20 +1,76 @@
 {
   "name": "airwave",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "No more servers. A cloud endpoint for every function.",
+  "author": "Jason Maurer",
+  "license": "MIT",
+  "homepage": "https://github.com/jsonmaur/airwave",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jsonmaur/airwave.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jsonmaur/airwave/issues"
+  "engines": {
+    "node": ">=4"
   },
-  "homepage": "https://github.com/jsonmaur/airwave#readme"
+  "keywords": [
+    "serverless",
+    "cloud code",
+    "lambda",
+    "function",
+    "endpoint"
+  ],
+  "files": [
+    "bin/",
+    "lib/",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "lib/index.js",
+  "bin": {
+    "airwave": "bin/airwave"
+  },
+  "scripts": {
+    "test:lint": "standard --verbose | snazzy",
+    "test:unit": "rm -rf coverage .nyc_output && nyc ava -a",
+    "test": "NODE_ENV=testing run-s test:*",
+    "posttest": "nyc report -r=lcov",
+    "coveralls": "cat coverage/lcov.info | coveralls",
+    "prebuild": "rm -rf lib",
+    "build": "babel src -d lib --no-comments",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "ava": "0.15.2",
+    "babel-cli": "6.10.1",
+    "babel-eslint": "6.1.0",
+    "babel-preset-es2015": "6.9.0",
+    "babel-preset-stage-2": "6.5.0",
+    "babel-register": "6.9.0",
+    "coveralls": "2.11.9",
+    "npm-run-all": "2.2.2",
+    "nyc": "6.6.1",
+    "snazzy": "4.0.0",
+    "standard": "7.1.2"
+  },
+  "dependencies": {},
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-2"
+    ]
+  },
+  "ava": {
+    "failFast": true,
+    "require": [
+      "babel-register"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "src"
+    ],
+    "require": [
+      "babel-register"
+    ]
+  }
 }
