@@ -1,19 +1,19 @@
-# Airwave
+# Airflow
 
-[![Build Status](https://travis-ci.org/jsonmaur/airwave.svg?branch=master)](https://travis-ci.org/jsonmaur/airwave)
-[![Coverage Status](https://coveralls.io/repos/github/jsonmaur/airwave/badge.svg?branch=master)](https://coveralls.io/github/jsonmaur/airwave?branch=master)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+[![Build Status](https://travis-ci.org/jsonmaur/airflow.svg?branch=master)](https://travis-ci.org/jsonmaur/airflow)
+[![Coverage Status](https://coveralls.io/repos/github/jsonmaur/airflow/badge.svg?branch=master)](https://coveralls.io/github/jsonmaur/airflow?branch=master)
+[![Code Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
 > *This package is under active development.*
 
-Airwave is an implementation of the idea that every function ever written should have its own endpoint. Whether your system has one function or ten thousand, the ease of testing and deployment should be the same.
+Airflow is a serverless web framework for Node.js optimized for deploying your endpoints as cloud code. This removes the need to maintain your own servers. Whether your API has one endpoint or ten thousand, the process of testing and deploying your web app should be simple.
 
 The only provider currently supported is Amazon Web Services (utilizing Lambda and API Gateway), but more providers are coming in the future.
 
 ## Getting Started
 
 ```bash
-npm install airwave -g
+npm install airflow -g
 ```
 
 ## License
