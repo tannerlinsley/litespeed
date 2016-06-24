@@ -1,21 +1,6 @@
-import http from 'http'
-import { getRoutes, fingerprint } from '../utils/router'
+import { fingerprint } from './router'
 
-export default async function (argv) {
-  const routes = await getRoutes()
-  const server = http.createServer((req, res) => serverHandler(routes, req, res))
-
-  server.on('clientError', (err, socket) => {
-    console.error('error:', err)
-    socket.end('HTTP/1.1 400 Bad Request\n')
-  })
-
-  server.listen(8000, () => {
-    console.log('server started')
-  })
-}
-
-export async function serverHandler (routes, request, response) {
+export default function (routes, request, response) {
   const route = routes[fingerprint(request)]
 
   if (!route) {
@@ -24,7 +9,7 @@ export async function serverHandler (routes, request, response) {
   }
 
   if (!route.handler) {
-    throw new Error(`no handler found for ${route.path}`)
+    throw new Error(`no handler found for ${route.url}`)
   }
 
   const data = []

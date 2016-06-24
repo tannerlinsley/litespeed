@@ -27,6 +27,7 @@
     "aws"
   ],
   "files": [
+    "assets/",
     "bin/",
     "lib/",
     "LICENSE",
@@ -38,7 +39,8 @@
   },
   "scripts": {
     "test:lint": "standard --verbose | snazzy",
-    "test:unit": "rm -rf coverage .nyc_output && nyc ava -a",
+    "test:unit": "rm -rf coverage .nyc_output && nyc ava test/unit -a",
+    "test:integration": "ava test/integration -s",
     "test": "NODE_ENV=testing run-s test:*",
     "posttest": "nyc report -r=lcov",
     "coveralls": "cat coverage/lcov.info | coveralls",
@@ -56,15 +58,21 @@
     "babel-preset-stage-2": "6.5.0",
     "babel-register": "6.9.0",
     "coveralls": "2.11.9",
+    "execa": "0.4.0",
     "npm-run-all": "2.2.2",
     "nyc": "6.6.1",
+    "proxyquire": "1.7.9",
+    "sinon": "1.17.4",
     "snazzy": "4.0.0",
     "standard": "7.1.2"
   },
   "dependencies": {
     "aws-sdk": "2.4.1",
     "babel-runtime": "6.9.2",
+    "chalk": "1.1.3",
+    "exit-hook": "1.1.1",
     "fs-promise": "0.5.0",
+    "glob": "7.0.5",
     "minimist": "1.2.0",
     "uuid": "2.0.2"
   },
@@ -87,7 +95,7 @@
     "parser": "babel-eslint"
   },
   "ava": {
-    "failFast": true,
+    "serial": true,
     "require": [
       "babel-register"
     ]

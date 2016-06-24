@@ -9,7 +9,7 @@ export default async function () {
 
   // const restApi = await gateway.createRestApi({
   //   name: uuid.v4(),
-  //   description: 'Created from the Airwave CLI'
+  //   description: 'Created from the Airflow CLI'
   // }).promise()
 
   // const resource = await gateway.createResource({
@@ -33,7 +33,7 @@ export default async function () {
   //   Handler: 'index.handler',
   //   Role: 'arn:aws:iam::606854932809:role/lambda_basic_execution',
   //   Runtime: 'nodejs4.3',
-  //   Description: 'Created from the Airwave CLI'
+  //   Description: 'Created from the Airflow CLI'
   // }).promise()
 
   // await gateway.putIntegration({
