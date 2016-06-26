@@ -41,11 +41,11 @@
     "test:lint": "standard --verbose | snazzy",
     "test:unit": "rm -rf coverage .nyc_output && nyc ava test/unit -a",
     "test:integration": "ava test/integration -s",
-    "test": "NODE_ENV=testing run-s test:*",
+    "test": "zoo NODE_ENV=testing run-s test:*",
     "posttest": "nyc report -r=lcov",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "prebuild": "rm -rf lib",
-    "build": "babel src -d lib --no-comments",
+    "build": "babel src -d lib -s --no-comments",
     "watch": "npm run build -- -w",
     "prepublish": "npm test && npm run build"
   },
@@ -58,13 +58,13 @@
     "babel-preset-stage-2": "6.5.0",
     "babel-register": "6.9.0",
     "coveralls": "2.11.9",
-    "execa": "0.4.0",
     "npm-run-all": "2.2.2",
     "nyc": "6.6.1",
     "proxyquire": "1.7.9",
     "sinon": "1.17.4",
     "snazzy": "4.0.0",
-    "standard": "7.1.2"
+    "standard": "7.1.2",
+    "zoo": "0.1.4"
   },
   "dependencies": {
     "aws-sdk": "2.4.1",
@@ -74,7 +74,11 @@
     "fs-promise": "0.5.0",
     "glob": "7.0.5",
     "minimist": "1.2.0",
+    "source-map-support": "0.4.0",
     "uuid": "2.0.2"
+  },
+  "standard": {
+    "parser": "babel-eslint"
   },
   "babel": {
     "presets": [
@@ -90,9 +94,6 @@
         }
       ]
     ]
-  },
-  "standard": {
-    "parser": "babel-eslint"
   },
   "ava": {
     "serial": true,

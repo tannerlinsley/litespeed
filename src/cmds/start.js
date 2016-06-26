@@ -5,11 +5,11 @@ import { log, logo, hideCursor } from '../utils/emit'
 export default async function (argv) {
   const app = new Server()
 
-  return app.start().then((uri) => {
+  return app.start().then((url) => {
     hideCursor()
     logo()
-    log(`Running at ${chalk.underline(uri)}`)
+    log(`Running at ${chalk.underline(url)}`)
 
-    return uri
+    return url
   })
 }

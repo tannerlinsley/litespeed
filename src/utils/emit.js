@@ -24,7 +24,7 @@ export function hideCursor () {
   process.stdout.write('\x1B[?25l')
 }
 
-exitHook(showCursor)
+exitHook(showCursor) // make sure we don't lose the cursor
 export function showCursor () {
   process.stdout.write('\x1B[?25h')
 }

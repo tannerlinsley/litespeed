@@ -17,9 +17,17 @@ Structure should be kept as simple as possible. One main entry file that exports
 - Request injecting for testing (similar to Hapi)
 - Data validation/sanitization
 - All error handling
-- Logging to S3
+- Send full errors to client when in dev mode
+- Auto-set environments with CLI
+- Logging requests, errors
+- Send logs to S3/CloudWatch
 - Run local server
 - Deployment environments (staging, production, etc.)
 - Payload limits to prevent malicious use
+- Multiple character encodings / charsets
 - Endpoint diffs, showing what has changed, and what will be created/updated/deleted
 - Request throttling
+- Get requester's IP Address, taking into account proxies
+- Gzipping Response
+- Custom cache control
+- Handle large payloads / file uploads / file descriptors
