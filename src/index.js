@@ -1,5 +1,9 @@
-import 'source-map-support/register'
+try {
+  require('source-map-support').install()
+} catch (err) { /* no sourcemap support */ }
+
 import http from 'http'
+import anyBody from 'body/any'
 import { getRoutes, fingerprint } from './utils/router'
 import { errors, getError, cleanStackTrace } from './utils/errors'
 
@@ -15,6 +19,8 @@ class Airflow {
     this.port = parseInt(opts.port, 10) || 8000
     /* a glob-style pattern for the function/route files */
     this.functions = opts.functions || 'functions/**/*.js'
+    /* payload byte limit */
+    this.byteLimit = opts.byteLimit || 1048576 // 1mb default
 
     /* the global route map */
     this.routes = getRoutes(this.functions)
@@ -49,12 +55,30 @@ class Airflow {
       const route = this.routes[fingerprint(req)]
       if (!route) throw errors.notFound()
 
-      /* run the user-defined route handler, returning a promise or a value */
-      const handlerResult = route.handler()
+      /* parse payload body to a Buffer */
+      const body = await new Promise((resolve, reject) => {
+        anyBody(req, {
+          limit: route.byteLimit || this.byteLimit
+        }, (err, result) => {
+          if (err) reject(err)
+          else resolve(result)
+        })
+      })
+
+      /* get client info */
+      const remoteAddress = req.connection.remoteAddress || req.socket.remoteAddress
+      const remoteFamily = req.connection.remoteFamily || req.socket.remoteFamily
+
+      /* run the user-defined route handler, returning a value or promise */
+      const handlerResult = route.handler({
+        body,
+        headers: req.headers,
+        meta: { remoteAddress, remoteFamily }
+      })
 
       /* resolve the promise if one is returned */
-      const response = handlerResult && handlerResult.then
-        ? await handlerResult : handlerResult
+      const response = (handlerResult && handlerResult.then
+        ? await handlerResult : handlerResult) || {}
 
       /* get status code from response or route */
       const code = typeof handlerResult === 'object' && response.statusCode
@@ -62,15 +86,6 @@ class Airflow {
 
       /* an error ocurred */
       if (code >= 400 || response instanceof Error) throw response
-
-      // const data = []
-      // request.on('data', (chunk) => data.push(chunk))
-      // request.on('error', (err) => console.error(err))
-      // request.on('end', () => {
-      //   response.on('error', (err) => console.error(err))
-      //   const body = Buffer.concat(data).toString()
-      //   const headers = request.headers
-      // })
 
       this.respond(res, code, { response })
     } catch (err) {
@@ -99,7 +114,11 @@ class Airflow {
   }
 
   /**
-   *
+   * Responds to a request with the correct status code and headers.
+   * Will auto-format the response into an Airflow object if needed,
+   * as well as stringify response objects.
+   * @param {object} res - The http server response
+   * @param {number} statusCode - The status code to respond with
    */
   respond (res, statusCode, opts = {}) {
     if (typeof opts !== 'object') {

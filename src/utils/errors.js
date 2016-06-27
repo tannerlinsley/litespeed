@@ -1,5 +1,8 @@
 import http from 'http'
 
+/**
+ * All predefined errors
+ */
 export const errors = {
   badRequest: (msg) => getError(400, msg),
   unauthorized: (msg) => getError(401, msg),
@@ -44,6 +47,13 @@ export const errors = {
   networkAuthRequired: (msg) => getError(511, msg)
 }
 
+/**
+ * Gets an error from predefined Node status codes, and
+ * returns a formatted Airflow response.
+ * @param {number} statusCode - The status code to lookup/use
+ * @param {string} message - An optional response message
+ * @return {object} The response object
+ */
 export function getError (statusCode, message) {
   const err = {
     statusCode,
@@ -55,6 +65,12 @@ export function getError (statusCode, message) {
   return err
 }
 
+/**
+ * Removes all unwanted clutter from error stack traces.
+ * In this case, it removes every line that includes a node_modules file.
+ * @param {object} error - An Error object
+ * @return {object} An Error object with the modified stack trace
+ */
 export function cleanStackTrace (error) {
   if (!error.stack) return error
 

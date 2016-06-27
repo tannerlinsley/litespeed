@@ -8,6 +8,15 @@ const Airflow = proxyquire('../../src/index', {
   }
 })
 
+const reqBase = {
+  socket: true,
+  headers: {},
+  connection: {
+    remoteAddress: '0.0.0.0',
+    remoteFamily: 'IPv4'
+  }
+}
+
 test('constructor', (t) => {
   const server = new Airflow()
   t.is(server.host, 'localhost')
@@ -51,7 +60,7 @@ test('onRequest', async (t) => {
   const server = new Airflow()
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => 'testing' } }
   server.respond = sinon.spy()
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   t.true(server.respond.calledWith({}, undefined, { response: 'testing' }))
 })
@@ -60,7 +69,7 @@ test('onRequest (promise)', async (t) => {
   const server = new Airflow()
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.resolve('testing') } }
   server.respond = sinon.spy()
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   t.true(server.respond.calledWith({}, undefined, { response: 'testing' }))
 })
@@ -69,7 +78,7 @@ test('onRequest (GET with status code)', async (t) => {
   const server = new Airflow()
   server.routes = { 'R0VUOi8=': { method: 'GET', statusCode: 201, url: '/', handler: () => Promise.resolve('testing') } }
   server.respond = sinon.spy()
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   t.true(server.respond.calledWith({}, 201, { response: 'testing' }))
 })
@@ -79,7 +88,7 @@ test('onRequest (with rejected promise)', async (t) => {
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.reject('oh no') } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -93,7 +102,7 @@ test('onRequest (with rejected promise in dev mode)', async (t) => {
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.reject('oh no') } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error', message: 'oh no' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -105,7 +114,7 @@ test('onRequest (with returned airflow error)', async (t) => {
   const server = new Airflow()
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Airflow.Errors.notFound('ohno') } }
   server.respond = sinon.spy()
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 404, error: 'Not Found', message: 'ohno' } }
   t.true(server.respond.calledWith({}, 404, err))
@@ -115,7 +124,7 @@ test('onRequest (with rejected promise airflow error)', async (t) => {
   const server = new Airflow()
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.reject(Airflow.Errors.notFound('ohno')) } }
   server.respond = sinon.spy()
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 404, error: 'Not Found', message: 'ohno' } }
   t.true(server.respond.calledWith({}, 404, err))
@@ -126,7 +135,7 @@ test('onRequest (with airflow server error)', async (t) => {
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Airflow.Errors.internal('ohno') } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -139,7 +148,7 @@ test('onRequest (with airflow server error in dev mode)', async (t) => {
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Airflow.Errors.internal('ohno') } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error', message: 'ohno' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -153,7 +162,7 @@ test('onRequest (with Error object)', async (t) => {
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => error } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -167,7 +176,7 @@ test('onRequest (with rejected promise Error object)', async (t) => {
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.reject(error) } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -182,7 +191,7 @@ test('onRequest (with rejected promise Error object in dev mode)', async (t) => 
   server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.reject(error) } }
   server.respond = sinon.spy()
   sinon.stub(console, 'error')
-  const request = { ...server.routes['R0VUOi8='], socket: true }
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 500, error: 'Internal Server Error', message: 'ohno' } }
   t.true(server.respond.calledWith({}, 500, err))
@@ -191,10 +200,29 @@ test('onRequest (with rejected promise Error object in dev mode)', async (t) => 
   process.env.NODE_ENV = 'testing'
 })
 
+test('onRequest (blank promise)', async (t) => {
+  const server = new Airflow()
+  server.routes = { 'R0VUOi8=': { method: 'GET', url: '/', handler: () => Promise.resolve() } }
+  server.respond = sinon.spy()
+  const request = { ...server.routes['R0VUOi8='], ...reqBase }
+  await server.onRequest(request, {})
+  t.true(server.respond.firstCall.calledWith({}, undefined, { response: {} }))
+})
+
+// test.only('onRequest (POST)', async (t) => {
+//   const server = new Airflow()
+//   const spy = sinon.spy()
+//   server.routes = { 'UE9TVDov': { method: 'POST', url: '/', handler: spy } }
+//   server.respond = sinon.spy()
+//   const request = { ...server.routes['UE9TVDov'], ...reqBase, headers: { 'Content-Type': 'application/json' } }
+//   await server.onRequest(request, {})
+//   console.log(spy.args[0][0])
+// })
+
 test('onRequest (not found)', async (t) => {
   const server = new Airflow()
   server.respond = sinon.spy()
-  const request = { method: 'GET', url: '/', socket: true }
+  const request = { method: 'GET', url: '/', ...reqBase }
   await server.onRequest(request, {})
   const err = { response: { statusCode: 404, error: 'Not Found' } }
   t.true(server.respond.calledWith({}, 404, err))
