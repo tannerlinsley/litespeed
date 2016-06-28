@@ -1,11 +1,5 @@
-try {
-  require('source-map-support').install()
-} catch (err) { /* no sourcemap support */ }
-
 import http from 'http'
-import anyBody from 'body/any'
-import { getRoutes, fingerprint } from './utils/router'
-import { errors, getError, cleanStackTrace } from './utils/errors'
+import { errors, getError, cleanStackTrace } from './errors'
 
 class Airflow {
   /**
@@ -13,17 +7,31 @@ class Airflow {
    * @param {object} opts - The config options
    */
   constructor (opts = {}) {
+    /* set server name (displays as Server header) */
+    this.name = opts.name || 'Airflow'
+
     /* the host to run on */
     this.host = opts.host || 'localhost'
+
     /* the port to run on */
     this.port = parseInt(opts.port, 10) || 8000
+
+    /* request timeout limit (10s default) */
+    // TODO: this.timeout = parseInt(opts.timeout, 10) || 10000
+
+    /* limit for payload size in bytes (1mb default) */
+    this.payloadLimit = parseInt(opts.payloadLimit, 10) || 1048576
+
     /* a glob-style pattern for the function/route files */
-    this.functions = opts.functions || 'functions/**/*.js'
-    /* payload byte limit */
-    this.byteLimit = opts.byteLimit || 1048576 // 1mb default
+    this.routesDir = opts.routesDir
+
+    /* setup log tags */
+    this.logs = opts.logs !== false
+      ? Object.assign({}, { server: true, request: true, error: true }, opts.logs || {})
+      : { server: false, request: false, error: false } // turns all logging off
 
     /* the global route map */
-    this.routes = getRoutes(this.functions)
+    this.routeMap = {}
   }
 
   /**
@@ -34,13 +42,16 @@ class Airflow {
   start () {
     /* create http server and setup request handler */
     const server = http.createServer(this.onRequest.bind(this))
-
-    /* where the server can be accessed */
     const url = `http://${this.host}:${this.port}`
 
     /* returns a promise resolving with the server url */
     return new Promise((resolve, reject) => {
-      server.listen(this.port, this.host, () => resolve(url))
+      server.listen(this.port, this.host, () => {
+        if (this.logs.server) {
+          console.log(`=> Running at ${url}`)
+        }
+        resolve(url)
+      })
     })
   }
 
@@ -49,67 +60,97 @@ class Airflow {
    * @param {object} request - The http server request
    * @param {object} response - The http server response
    */
-  async onRequest (req, res) {
+  async onRequest (request, response) {
     try {
-      /* finds the requested route from the routes map */
-      const route = this.routes[fingerprint(req)]
+      /* get ip address of client */
+      const remoteAddress = this.getIpAddress(request)
+
+      /* log request */
+      if (this.logs.request) {
+        console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
+      }
+
+      /* lookup from route map */
+      const route = this.routeMap[this.fingerprint(request)]
       if (!route) throw errors.notFound()
 
-      /* parse payload body to a Buffer */
+      /* get request body data */
       const body = await new Promise((resolve, reject) => {
-        anyBody(req, {
-          limit: route.byteLimit || this.byteLimit
-        }, (err, result) => {
-          if (err) reject(err)
-          else resolve(result)
-        })
+        let data = ''
+
+        request
+          .on('error', reject)
+          .on('data', (chunk) => {
+            data += chunk
+            /* prevent oversized payloads */
+            if (data.length > this.payloadLimit) {
+              data = ''
+              this.respond(response, 413)
+              request.connection.destroy()
+              reject()
+            }
+          })
+          .on('end', () => {
+            // TODO: parse depending on Content-Type
+            resolve(data)
+          })
       })
 
-      /* get client info */
-      const remoteAddress = req.connection.remoteAddress || req.socket.remoteAddress
-      const remoteFamily = req.connection.remoteFamily || req.socket.remoteFamily
-
-      /* run the user-defined route handler, returning a value or promise */
-      const handlerResult = route.handler({
+      /* data sent through to route handler */
+      const requestData = {
         body,
-        headers: req.headers,
-        meta: { remoteAddress, remoteFamily }
-      })
+        headers: request.headers,
+        info: { remoteAddress }
+      }
+      const responseData = {
+        setHeader: (name, value) => response.setHeader(name, value)
+      }
 
+      const handlerResult = route.handler(requestData, responseData)
       /* resolve the promise if one is returned */
-      const response = (handlerResult && handlerResult.then
-        ? await handlerResult : handlerResult) || {}
+      const result = (handlerResult && handlerResult.then
+        ? await handlerResult : handlerResult) || { __noResponse: true }
 
       /* get status code from response or route */
-      const code = typeof handlerResult === 'object' && response.statusCode
-        ? response.statusCode : route.statusCode
+      const statusCode = typeof result === 'object' && result.statusCode
+        ? result.statusCode : route.statusCode
 
-      /* an error ocurred */
-      if (code >= 400 || response instanceof Error) throw response
+      /* result is an error, send it to the catch */
+      if (statusCode >= 400 || result instanceof Error) {
+        throw result
+      }
 
-      this.respond(res, code, { response })
-    } catch (err) {
-      const code = err.statusCode || 500
+      /* respond with result */
+      this.respond(response, statusCode, result)
+    } catch (error) {
+      const statusCode = error.statusCode || 500
 
-      /* properly log server errors */
-      if (code >= 500) {
-        let errLog = err
-        if (!(errLog instanceof Error)) {
-          errLog = new Error(JSON.stringify(errLog))
+      /* format error if it's not already */
+      const errorResponse = !error.error
+        ? getError(statusCode, error.message || error)
+        : error
+
+      /* display and log server errors correctly */
+      if (statusCode >= 500) {
+        if (this.logs.error) {
+          let toLog = error
+
+          if (!(toLog instanceof Error)) {
+            toLog = new Error(JSON.stringify(toLog))
+          }
+
+          console.error(cleanStackTrace(toLog))
         }
-        console.error(cleanStackTrace(errLog))
+
+        /* remove server errors unless in dev mode */
+        const isDev = String(process.env.NODE_ENV).match(/dev/i)
+        if (statusCode >= 500 && !isDev && errorResponse.message) {
+          delete errorResponse.message
+        }
       }
 
-      /* format error (if not already formatted) */
-      const message = err.message || err
-      const response = message.error ? message : getError(code, message)
-
-      /* don't send server error messages to user unless in dev mode */
-      if (code >= 500 && !String(process.env.NODE_ENV).match(/dev/i)) {
-        delete response.message
-      }
-
-      this.respond(res, code, { response })
+      /* respond with error */
+      this.respond(response, statusCode, errorResponse)
     }
   }
 
@@ -120,27 +161,81 @@ class Airflow {
    * @param {object} res - The http server response
    * @param {number} statusCode - The status code to respond with
    */
-  respond (res, statusCode, opts = {}) {
-    if (typeof opts !== 'object') {
-      throw new TypeError('options must be an object!')
-    }
-
+  respond (res, statusCode, message) {
     /* stringify and prettify response object */
-    opts.response = opts.response
-      ? JSON.stringify(opts.response, null, 2)
-      : 'OK'
+    message = typeof message === 'object' && message.__noResponse
+      ? '' : JSON.stringify(message, null, 2)
 
     /* send proper status code and headers */
     res.writeHead(parseInt(statusCode, 10) || 200, {
-      'Server': 'Airflow',
+      'Server': this.name,
       'Content-Type': 'application/json; charset=utf-8',
-      'Content-Length': opts.response.length,
+      'Content-Length': message.length,
       'Cache-Control': 'no-cache'
     })
 
     /* send response */
-    res.write(opts.response)
+    res.write(message)
     res.end()
+  }
+
+  /**
+   * Defines a single route and adds to the route map.
+   * @param {object} config - The airflow route config
+   */
+  route (config) {
+    if (!config) {
+      throw new TypeError('Routes must have a configuration object')
+    }
+
+    /* create base64 encoded key */
+    const key = this.fingerprint(config)
+    /* make sure route isn't a duplicate */
+    if (this.routeMap[key]) {
+      throw new Error(`"${config.method} ${config.url}" is defined more than once`)
+    }
+
+    /* add to route map */
+    this.routeMap[key] = config
+  }
+
+  /**
+   * Fingerprints a route for easy lookup from the route map.
+   * @param {object} route - The airflow route object
+   * @returns The encoded string
+   */
+  fingerprint (route) {
+    /* makes sure there is a handler if we are parsing an airflow route */
+    /* !route.socket will be true if it is an incoming request */
+    if (!route.socket && typeof route.handler !== 'function') {
+      throw new TypeError('Route handler must be a function!')
+    }
+    if (!route.method.match(/^(get|post|put|patch|delete)$/i)) {
+      throw new TypeError('Route method must be one of GET, POST, PUT, PATCH, DELETE')
+    }
+    if (typeof route.url !== 'string') {
+      // TODO: check for a valid url
+      throw new TypeError('Route URL must be a string')
+    }
+
+    /* simply concats the method and url, and base64 encodes it */
+    return new Buffer(`${route.method}:${route.url}`).toString('base64')
+  }
+
+  /**
+   * Gets an IP address from a Hapi request, taking into account
+   * multiple forwarded addresses (such as from a proxy server).
+   * @param {object} request - The request send through by a Hapi handler
+   * @returns {string} The user's IP address (best guess)
+   */
+  getIpAddress (request) {
+    const remote = request.connection.remoteAddress || request.socket.remoteAddress
+
+    const forwarded = request.headers['x-forwarded-for']
+    if (!forwarded) return remote
+
+    /* return first in the list if there are many */
+    return String(forwarded).split(',')[0].trim()
   }
 }
 
