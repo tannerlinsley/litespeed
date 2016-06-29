@@ -3,6 +3,7 @@ import qs from 'querystring'
 import stream from 'stream'
 import rawBody from 'raw-body'
 import typer from 'media-typer'
+import validation from './validation'
 import { errors, getError, cleanStackTrace } from './errors'
 
 class Airflow {
@@ -82,7 +83,10 @@ class Airflow {
       const query = Array.isArray(queryRegex)
         ? qs.parse(queryRegex[0].substring(1)) : {}
 
-      /* parse url data */
+      /* get url params */
+      const params = {} // TODO!
+
+      /* get url ready for lookup */
       if (queryRegex.index) {
         request.url = request.url.substring(0, queryRegex.index)
       }
@@ -94,7 +98,7 @@ class Airflow {
       /* setup timeout */
       let hasTimedOut = false
       response.setTimeout(this.timeout, (socket) => {
-        const msg = `Max request time of ${this.timeout/1000}s reached`
+        const msg = `Max request time of ${this.timeout / 1000}s reached`
 
         this.respond(response, 408, getError(408, msg))
         hasTimedOut = true
@@ -140,9 +144,48 @@ class Airflow {
           throw errors.unsupportedMediaType()
       }
 
+      /* run validations */
+      await new Promise((resolve, reject) => {
+        const allErrors = []
+
+        /* defaults */
+        route.validation = route.validation || {}
+        route.validation.body = route.validation.body || {}
+        route.validation.query = route.validation.query || {}
+        route.validation.params = route.validation.params || {}
+
+        /* validate body data */
+        for (const i in route.validation.body) {
+          const validateResult = route.validation.body[i].run(i, body[i])
+          if (validateResult.length > 0) allErrors.push(validateResult)
+        }
+
+        /* validate query data */
+        for (const i in route.validation.query) {
+          const validateResult = route.validation.query[i].run(i, query[i], 'query')
+          if (validateResult.length > 0) allErrors.push(validateResult)
+        }
+
+        /* validate params data */
+        for (const i in route.validation.params) {
+          const validateResult = route.validation.params[i].run(i, params[i], 'params')
+          if (validateResult.length > 0) allErrors.push(validateResult)
+        }
+
+        /* reject with 400 error and validation errors if there are any */
+        if (allErrors.length > 0) {
+          return reject({
+            ...errors.badRequest('A validation error occured'),
+            validation: allErrors
+          })
+        }
+
+        resolve()
+      })
+
       /* request data sent through to route handler */
       const requestData = {
-        query, body,
+        query, body, params,
         headers: request.headers,
         info: { remoteAddress }
       }
@@ -323,3 +366,4 @@ class Airflow {
 
 module.exports = Airflow
 module.exports.Errors = errors
+module.exports.Validator = validation
