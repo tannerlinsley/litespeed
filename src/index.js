@@ -29,9 +29,6 @@ class Airflow {
     /* limit for payload size in bytes (1mb default) */
     this.payloadLimit = parseInt(opts.payloadLimit, 10) || 1048576
 
-    /* a glob-style pattern for the function/route files */
-    this.routesDir = opts.routesDir
-
     /* setup log tags */
     this.logs = opts.logs !== false
       ? Object.assign({}, { server: true, request: true, error: true }, opts.logs || {})
@@ -68,6 +65,7 @@ class Airflow {
    * @param {object} response - The http server response
    */
   async onRequest (request, response) {
+    let route
     try {
       /* get ip address of client */
       const remoteAddress = this.getIpAddress(request)
@@ -88,7 +86,7 @@ class Airflow {
       }
 
       /* lookup from route map */
-      const route = this.routeMap[this.fingerprint(request)]
+      route = this.routeMap[this.fingerprint(request)]
       if (!route) throw errors.notFound()
 
       /* parse content type so we can process data */
@@ -155,35 +153,50 @@ class Airflow {
       /* respond with result */
       this.respond(response, statusCode, result)
     } catch (error) {
-      const statusCode = error.statusCode || 500
+      /* catch errors within the error handler :) */
+      try {
+        if (typeof route.onError === 'function') {
+          const onErrorResponse = route.onError(error)
+          const errorResponse = onErrorResponse.then
+            ? await onErrorResponse : onErrorResponse
 
-      /* format error if it's not already */
-      const errorResponse = !error.error
-        ? getError(statusCode, error.message || error)
-        : error
+          const statusCode = errorResponse.statusCode || 500
+          return this.respond(response, statusCode, errorResponse)
+        }
 
-      /* display and log server errors correctly */
-      if (statusCode >= 500) {
-        if (this.logs.error) {
-          let toLog = error
+        const statusCode = error.statusCode || 500
 
-          /* turn into an error if needed */
-          if (!(toLog instanceof Error)) {
-            toLog = new Error(JSON.stringify(toLog))
+        /* format error if it's not already */
+        const errorResponse = !error.error
+          ? getError(statusCode, error.message || error)
+          : error
+
+        /* display and log server errors correctly */
+        if (statusCode >= 500) {
+          if (this.logs.error) {
+            let toLog = error
+
+            /* turn into an error if needed */
+            if (!(toLog instanceof Error)) {
+              toLog = new Error(JSON.stringify(toLog))
+            }
+
+            /* log out error with a filtered stack trace */
+            console.error(cleanStackTrace(toLog))
           }
 
-          /* log out error with a filtered stack trace */
-          console.error(cleanStackTrace(toLog))
+          /* remove server errors unless in dev mode */
+          if (statusCode >= 500 && !this.isDev && errorResponse.message) {
+            delete errorResponse.message
+          }
         }
 
-        /* remove server errors unless in dev mode */
-        if (statusCode >= 500 && !this.isDev && errorResponse.message) {
-          delete errorResponse.message
-        }
+        /* respond with error */
+        this.respond(response, statusCode, errorResponse)
+      } catch (err) {
+        console.error(err)
+        this.respond(response, 500, getError(500))
       }
-
-      /* respond with error */
-      this.respond(response, statusCode, errorResponse)
     }
   }
 
