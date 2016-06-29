@@ -1,4 +1,5 @@
 import http from 'http'
+import qs from 'querystring'
 import stream from 'stream'
 import rawBody from 'raw-body'
 import typer from 'media-typer'
@@ -101,6 +102,16 @@ class Airflow {
           } catch (err) {
             throw errors.badRequest('Invalid JSON payload')
           }
+          break
+        case 'x-www-form-urlencoded':
+          try {
+            bodyProcessed = qs.parse(body)
+          } catch (err) {
+            throw errors.badRequest('Invalid form data')
+          }
+          break
+        case 'plain':
+          /* no processing needed */
           break
         default:
           throw errors.unsupportedMediaType()
