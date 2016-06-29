@@ -1,8 +1,5 @@
 import http from 'http'
 
-/**
- * All predefined errors
- */
 export const errors = {
   badRequest: (msg) => getError(400, msg),
   unauthorized: (msg) => getError(401, msg),
@@ -22,12 +19,9 @@ export const errors = {
   unsupportedMediaType: (msg) => getError(415, msg),
   rangeNotSatisfiable: (msg) => getError(416, msg),
   expectationFailed: (msg) => getError(417, msg),
-  teapot: (msg) => getError(418, msg),
-  misdirectedRequest: (msg) => getError(421, msg),
   unprocessableEntity: (msg) => getError(422, msg),
   locked: (msg) => getError(423, msg),
   failedDependency: (msg) => getError(424, msg),
-  unorderedCollection: (msg) => getError(425, msg),
   upgradeRequired: (msg) => getError(426, msg),
   preconditionRequired: (msg) => getError(428, msg),
   tooManyRequests: (msg) => getError(429, msg),
@@ -39,7 +33,6 @@ export const errors = {
   serviceUnavailable: (msg) => getError(503, msg),
   gatewayTimeout: (msg) => getError(504, msg),
   httpVersionNotSupported: (msg) => getError(505, msg),
-  variantAlsoNegotiates: (msg) => getError(506, msg),
   insufficientStorage: (msg) => getError(507, msg),
   loopDetected: (msg) => getError(508, msg),
   bandwidthLimitExceeded: (msg) => getError(509, msg),
