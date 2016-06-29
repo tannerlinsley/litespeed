@@ -23,8 +23,8 @@ class Airflow {
     /* the port to run on */
     this.port = parseInt(opts.port, 10) || 8000
 
-    /* request timeout limit (10s default) */
-    // TODO: this.timeout = parseInt(opts.timeout, 10) || 10000
+    /* request timeout limit (5s default) */
+    this.timeout = parseInt(opts.timeout, 10) || 5000
 
     /* limit for payload size in bytes (1mb default) */
     this.payloadLimit = parseInt(opts.payloadLimit, 10) || 1048576
@@ -47,6 +47,8 @@ class Airflow {
     /* create http server and setup request handler */
     const server = http.createServer(this.onRequest.bind(this))
     const url = `http://${this.host}:${this.port}`
+
+    server.timeout = this.timeout
 
     /* returns a promise resolving with the server url */
     return new Promise((resolve, reject) => {
@@ -88,6 +90,17 @@ class Airflow {
       /* lookup from route map */
       route = this.routeMap[this.fingerprint(request)]
       if (!route) throw errors.notFound()
+
+      /* setup timeout */
+      let hasTimedOut = false
+      response.setTimeout(this.timeout, (socket) => {
+        const msg = `Max request time of ${this.timeout/1000}s reached`
+
+        this.respond(response, 408, getError(408, msg))
+        hasTimedOut = true
+
+        socket.destroy()
+      })
 
       /* parse content type so we can process data */
       const contentType = request.headers['content-type'] || 'text/plain; charset=utf-8'
@@ -141,6 +154,7 @@ class Airflow {
 
       const handlerResult = route.handler(requestData, responseData)
       /* resolve the promise if one is returned */
+      // TODO: somehow cancel the promise when request times out
       const result = (handlerResult && handlerResult.then
         ? await handlerResult : handlerResult) || { __noResponse: true }
 
@@ -154,7 +168,7 @@ class Airflow {
       }
 
       /* respond with result */
-      this.respond(response, statusCode, result)
+      if (!hasTimedOut) this.respond(response, statusCode, result)
     } catch (error) {
       /* catch errors within the error handler :) */
       try {
