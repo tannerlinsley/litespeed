@@ -77,7 +77,12 @@ class Airflow {
         console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
       }
 
+      /* get url query data */
+      const queryIndex = request.url.lastIndexOf('?')
+      const query = qs.parse(request.url.substring(queryIndex + 1))
+
       /* lookup from route map */
+      request.url = request.url.substring(0, queryIndex)
       const route = this.routeMap[this.fingerprint(request)]
       if (!route) throw errors.notFound()
 
@@ -87,25 +92,24 @@ class Airflow {
 
       /* get request body data */
       // TODO: stream.destroy or stream.close needed for file descriptors?
-      const body = await rawBody(request, {
+      let body = await rawBody(request, {
         limit: this.payloadLimit,
         length: request.headers['content-length'],
         encoding: mediaType.parameters.charset || 'utf-8'
       })
 
       /* process body data */
-      let bodyProcessed = body
       switch (mediaType.subtype) {
         case 'json':
           try {
-            bodyProcessed = JSON.parse(body)
+            body = JSON.parse(body)
           } catch (err) {
             throw errors.badRequest('Invalid JSON payload')
           }
           break
         case 'x-www-form-urlencoded':
           try {
-            bodyProcessed = qs.parse(body)
+            body = qs.parse(body)
           } catch (err) {
             throw errors.badRequest('Invalid form data')
           }
@@ -115,12 +119,11 @@ class Airflow {
           break
         default:
           throw errors.unsupportedMediaType()
-          break
       }
 
       /* request data sent through to route handler */
       const requestData = {
-        body: bodyProcessed,
+        query, body,
         headers: request.headers,
         info: { remoteAddress }
       }
