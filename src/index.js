@@ -94,12 +94,15 @@ class Airflow {
       const mediaType = typer.parse(contentType)
 
       /* get request body data */
-      // TODO: stream.destroy or stream.close needed for file descriptors?
-      let body = await rawBody(request, {
-        limit: this.payloadLimit,
-        length: request.headers['content-length'],
-        encoding: mediaType.parameters.charset || 'utf-8'
-      })
+      let body = {}
+      if (request.method.match(/^(post|put|patch)$/i)) {
+        // TODO: stream.destroy or stream.close needed for file descriptors?
+        body = await rawBody(request, {
+          limit: this.payloadLimit,
+          length: request.headers['content-length'],
+          encoding: mediaType.parameters.charset || 'utf-8'
+        })
+      }
 
       /* process body data */
       switch (mediaType.subtype) {
