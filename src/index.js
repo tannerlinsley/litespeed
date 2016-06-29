@@ -78,11 +78,16 @@ class Airflow {
       }
 
       /* get url query data */
-      const queryIndex = request.url.lastIndexOf('?')
-      const query = qs.parse(request.url.substring(queryIndex + 1))
+      const queryRegex = request.url.match(/\?.*$/) || {}
+      const query = Array.isArray(queryRegex)
+        ? qs.parse(queryRegex[0].substring(1)) : {}
+
+      /* parse url data */
+      if (queryRegex.index) {
+        request.url = request.url.substring(0, queryRegex.index)
+      }
 
       /* lookup from route map */
-      request.url = request.url.substring(0, queryIndex)
       const route = this.routeMap[this.fingerprint(request)]
       if (!route) throw errors.notFound()
 
