@@ -1,4 +1,7 @@
 import http from 'http'
+import stream from 'stream'
+import rawBody from 'raw-body'
+import typer from 'media-typer'
 import { errors, getError, cleanStackTrace } from './errors'
 
 class Airflow {
@@ -7,6 +10,9 @@ class Airflow {
    * @param {object} opts - The config options
    */
   constructor (opts = {}) {
+    /* whether we are in dev mode */
+    this.isDev = String(process.env.NODE_ENV).match(/dev/i)
+
     /* set server name (displays as Server header) */
     this.name = opts.name || 'Airflow'
 
@@ -74,34 +80,41 @@ class Airflow {
       const route = this.routeMap[this.fingerprint(request)]
       if (!route) throw errors.notFound()
 
-      /* get request body data */
-      const body = await new Promise((resolve, reject) => {
-        let data = ''
+      /* parse content type so we can process data */
+      const contentType = request.headers['content-type'] || 'text/plain; charset=utf-8'
+      const mediaType = typer.parse(contentType)
 
-        request
-          .on('error', reject)
-          .on('data', (chunk) => {
-            data += chunk
-            /* prevent oversized payloads */
-            if (data.length > this.payloadLimit) {
-              data = ''
-              this.respond(response, 413)
-              request.connection.destroy()
-              reject()
-            }
-          })
-          .on('end', () => {
-            // TODO: parse depending on Content-Type
-            resolve(data)
-          })
+      /* get request body data */
+      // TODO: stream.destroy or stream.close needed for file descriptors?
+      const body = await rawBody(request, {
+        limit: this.payloadLimit,
+        length: request.headers['content-length'],
+        encoding: mediaType.parameters.charset || 'utf-8'
       })
 
-      /* data sent through to route handler */
+      /* process body data */
+      let bodyProcessed = body
+      switch (mediaType.subtype) {
+        case 'json':
+          try {
+            bodyProcessed = JSON.parse(body)
+          } catch (err) {
+            throw errors.badRequest('Invalid JSON payload')
+          }
+          break
+        default:
+          throw errors.unsupportedMediaType()
+          break
+      }
+
+      /* request data sent through to route handler */
       const requestData = {
-        body,
+        body: bodyProcessed,
         headers: request.headers,
         info: { remoteAddress }
       }
+
+      /* response functions exposed to handler */
       const responseData = {
         setHeader: (name, value) => response.setHeader(name, value)
       }
@@ -135,16 +148,17 @@ class Airflow {
         if (this.logs.error) {
           let toLog = error
 
+          /* turn into an error if needed */
           if (!(toLog instanceof Error)) {
             toLog = new Error(JSON.stringify(toLog))
           }
 
+          /* log out error with a filtered stack trace */
           console.error(cleanStackTrace(toLog))
         }
 
         /* remove server errors unless in dev mode */
-        const isDev = String(process.env.NODE_ENV).match(/dev/i)
-        if (statusCode >= 500 && !isDev && errorResponse.message) {
+        if (statusCode >= 500 && !this.isDev && errorResponse.message) {
           delete errorResponse.message
         }
       }
@@ -161,22 +175,41 @@ class Airflow {
    * @param {object} res - The http server response
    * @param {number} statusCode - The status code to respond with
    */
-  respond (res, statusCode, message) {
-    /* stringify and prettify response object */
-    message = typeof message === 'object' && message.__noResponse
-      ? '' : JSON.stringify(message, null, 2)
-
+  respond (res, statusCode, data) {
     /* send proper status code and headers */
-    res.writeHead(parseInt(statusCode, 10) || 200, {
-      'Server': this.name,
-      'Content-Type': 'application/json; charset=utf-8',
-      'Content-Length': message.length,
-      'Cache-Control': 'no-cache'
-    })
+    res.statusCode = parseInt(statusCode, 10) || 200
+    res.setHeader('Server', this.name)
+    res.setHeader('Cache-Control', 'no-cache')
 
-    /* send response */
-    res.write(message)
-    res.end()
+    /* send correct headers and response based on data type */
+    if (data) {
+      if (Buffer.isBuffer(data)) {
+        res.setHeader('Content-Type', 'application/octet-stream')
+        res.setHeader('Content-Length', data.length)
+        res.end(data)
+      } else if (data instanceof stream.Stream) {
+        res.setHeader('Content-Type', 'application/octet-stream')
+        data.pipe(res)
+      } else {
+        res.setHeader('Content-Type', 'text/plain')
+        if (typeof data === 'object') {
+          /* set if the handler doesn't return anything */
+          /* defaults to this __noResponse object above */
+          if (data.__noResponse) {
+            data = ''
+          } else {
+            /* only prettify in dev mode to take advantages of V8 optimizations */
+            data = this.isDev ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+            res.setHeader('Content-Type', 'application/json')
+          }
+        }
+        /* must use byteLength since we need the actual length vs # of characters */
+        res.setHeader('Content-Length', Buffer.byteLength(data))
+        res.end(data)
+      }
+    } else {
+      res.end()
+    }
   }
 
   /**
