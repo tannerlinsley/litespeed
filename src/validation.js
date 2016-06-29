@@ -37,7 +37,8 @@ class Validation {
   }
 
   /**
-   * Formats a humanized string for min and max values
+   * Formats a humanized string for min and max values.
+   * e.g. { min: 1, max: 3 } === 'between 1 and 3'
    * @param {object} opts - Options: min, max, noSpace
    */
   humanizeLimit (opts) {
@@ -296,6 +297,6 @@ class Validation {
 }
 
 /* have to export the class and call with 'new' in the actual app. */
-/* this is because rules get intertwined because of 'this.rules'. */
+/* this is because things get intertwined because of 'this.rules' if exported with new. */
 
 export default Validation

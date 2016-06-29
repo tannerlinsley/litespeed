@@ -12,8 +12,11 @@ class Airflow {
    * @param {object} opts - The config options
    */
   constructor (opts = {}) {
+    /* get environment */
+    this.env = String(process.env.NODE_ENV)
+
     /* whether we are in dev mode */
-    this.isDev = String(process.env.NODE_ENV).match(/dev/i)
+    this.isDev = this.env.match(/dev/i)
 
     /* set server name (displays as Server header) */
     this.name = opts.name || 'Airflow'

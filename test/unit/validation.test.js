@@ -42,7 +42,7 @@ test('equals', (t) => {
 test('isAfter', (t) => {
   t.is(new Validation().isAfter(Date.now() - 1000).run('field', new Date()).length, 0)
   t.is(new Validation().isAfter(Date.now() + 1000).run('field', new Date()).length, 1)
-  t.is(new Validation().isAfter().run('field', new Date()).length, 1)
+  t.is(new Validation().isAfter().run('field', new Date(Date.now() - 1000)).length, 1)
 })
 
 test('isAlpha', (t) => {
@@ -68,7 +68,7 @@ test('isBase64', (t) => {
 test('isBefore', (t) => {
   t.is(new Validation().isBefore(Date.now() + 1000).run('field', new Date()).length, 0)
   t.is(new Validation().isBefore(Date.now() - 1000).run('field', new Date()).length, 1)
-  t.is(new Validation().isBefore().run('field', new Date()).length, 1)
+  t.is(new Validation().isBefore().run('field', new Date(Date.now() + 1000)).length, 1)
 })
 
 test('isBoolean', (t) => {
