@@ -68,6 +68,7 @@
   "dependencies": {
     "babel-runtime": "6.9.2",
     "media-typer": "0.3.0",
+    "micromatch": "2.3.10",
     "raw-body": "2.1.7",
     "validator": "5.4.0"
   },

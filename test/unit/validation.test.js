@@ -13,6 +13,8 @@ test('run', (t) => {
   validation.isRequired = true
   t.is(validation.run('test', '')[0].field, 'test')
   t.is(validation.run('test', '')[0].message, 'cannot be empty')
+  t.is(validation.run('test', '')[0].where, 'body')
+  t.is(validation.run('test', '', 'query')[0].where, 'query')
 })
 
 test('humanizeLimit', (t) => {

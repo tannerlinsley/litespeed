@@ -3,6 +3,9 @@ import qs from 'querystring'
 import stream from 'stream'
 import rawBody from 'raw-body'
 import typer from 'media-typer'
+import mm from 'micromatch'
+import { parseRoute } from './router'
+import { getIpAddress } from './utils'
 import validation from './validation'
 import { errors, getError, cleanStackTrace } from './errors'
 
@@ -30,8 +33,14 @@ class Airflow {
     /* request timeout limit (5s default) */
     this.timeout = parseInt(opts.timeout, 10) || 5000
 
+    /* strip unknown values from payloads/queries */
+    this.stripUnknown = opts.stripUnknown || true
+
     /* limit for payload size in bytes (1mb default) */
     this.payloadLimit = parseInt(opts.payloadLimit, 10) || 1048576
+
+    /* whether to add basic security headers */
+    this.protect = opts.protect || true
 
     /* setup log tags */
     this.logs = opts.logs !== false
@@ -39,7 +48,12 @@ class Airflow {
       : { server: false, request: false, error: false } // turns all logging off
 
     /* the global route map */
-    this.routeMap = {}
+    this.routeMap = {
+      map: {},
+      routes: {
+        get: {}, post: {}, put: {}, patch: {}, delete: {}
+      }
+    }
   }
 
   /**
@@ -53,6 +67,7 @@ class Airflow {
     const url = `http://${this.host}:${this.port}`
 
     server.timeout = this.timeout
+    console.log(this.routeMap)
 
     /* returns a promise resolving with the server url */
     return new Promise((resolve, reject) => {
@@ -74,7 +89,7 @@ class Airflow {
     let route
     try {
       /* get ip address of client */
-      const remoteAddress = this.getIpAddress(request)
+      const remoteAddress = getIpAddress(request)
 
       /* log request */
       if (this.logs.request) {
@@ -95,7 +110,10 @@ class Airflow {
       }
 
       /* lookup from route map */
-      route = this.routeMap[this.fingerprint(request)]
+      const routeMap = this.routeMap[request.method.toLowerCase()]
+      Object.keys(routeMap).forEach((r) => {
+        if (mm.isMatch(request.url, r)) route = routeMap[r]
+      })
       if (!route) throw errors.notFound()
 
       /* setup timeout */
@@ -157,6 +175,23 @@ class Airflow {
         route.validation.query = route.validation.query || {}
         route.validation.params = route.validation.params || {}
 
+        /* strip unknown body/query values */
+        if (this.stripUnknown) {
+          const bodyValidationKeys = Object.keys(route.validation.body)
+          if (bodyValidationKeys.length > 0) {
+            for (const i in body) {
+              if (bodyValidationKeys.indexOf(i) < 0) delete body[i]
+            }
+          }
+
+          const queryValidationKeys = Object.keys(route.validation.query)
+          if (queryValidationKeys.length > 0) {
+            for (const i in query) {
+              if (queryValidationKeys.indexOf(i) < 0) delete query[i]
+            }
+          }
+        }
+
         /* validate body data */
         for (const i in route.validation.body) {
           const validateResult = route.validation.body[i].run(i, body[i])
@@ -213,12 +248,21 @@ class Airflow {
         throw result
       }
 
+      /* security headers */
+      if (route.protect) {
+        response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+        response.setHeader('X-Content-Type-Options', 'nosniff')
+        response.setHeader('X-Download-Options', 'noopen')
+        response.setHeader('X-Frame-Options', 'DENY')
+        response.setHeader('X-XSS-Protection', '1; mode=block')
+      }
+
       /* respond with result */
       if (!hasTimedOut) this.respond(response, statusCode, result)
     } catch (error) {
       /* catch errors within the error handler :) */
       try {
-        if (typeof route.onError === 'function') {
+        if (route && typeof route.onError === 'function') {
           const onErrorResponse = route.onError(error)
           const errorResponse = onErrorResponse.then
             ? await onErrorResponse : onErrorResponse
@@ -273,7 +317,7 @@ class Airflow {
   respond (res, statusCode, data) {
     /* send proper status code and headers */
     res.statusCode = parseInt(statusCode, 10) || 200
-    res.setHeader('Server', this.name)
+    res.setHeader('X-Powered-By', this.name)
     res.setHeader('Cache-Control', 'no-cache')
 
     /* send correct headers and response based on data type */
@@ -308,62 +352,14 @@ class Airflow {
   }
 
   /**
-   * Defines a single route and adds to the route map.
-   * @param {object} config - The airflow route config
+   * Adds a route to the global route map.
+   * @param {object} config - An airflow route config
    */
-  route (config) {
-    if (!config) {
-      throw new TypeError('Routes must have a configuration object')
-    }
+  routes (config) {
+    const data = parseRoute(config, this.routeMap)
 
-    /* create base64 encoded key */
-    const key = this.fingerprint(config)
-    /* make sure route isn't a duplicate */
-    if (this.routeMap[key]) {
-      throw new Error(`"${config.method} ${config.url}" is defined more than once`)
-    }
-
-    /* add to route map */
-    this.routeMap[key] = config
-  }
-
-  /**
-   * Fingerprints a route for easy lookup from the route map.
-   * @param {object} route - The airflow route object
-   * @returns The encoded string
-   */
-  fingerprint (route) {
-    /* makes sure there is a handler if we are parsing an airflow route */
-    /* !route.socket will be true if it is an incoming request */
-    if (!route.socket && typeof route.handler !== 'function') {
-      throw new TypeError('Route handler must be a function!')
-    }
-    if (!route.method.match(/^(get|post|put|patch|delete)$/i)) {
-      throw new TypeError('Route method must be one of GET, POST, PUT, PATCH, DELETE')
-    }
-    if (typeof route.url !== 'string') {
-      // TODO: check for a valid url
-      throw new TypeError('Route URL must be a string')
-    }
-
-    /* simply concats the method and url, and base64 encodes it */
-    return new Buffer(`${route.method}:${route.url}`).toString('base64')
-  }
-
-  /**
-   * Gets an IP address from a Hapi request, taking into account
-   * multiple forwarded addresses (such as from a proxy server).
-   * @param {object} request - The request send through by a Hapi handler
-   * @returns {string} The user's IP address (best guess)
-   */
-  getIpAddress (request) {
-    const remote = request.connection.remoteAddress || request.socket.remoteAddress
-
-    const forwarded = request.headers['x-forwarded-for']
-    if (!forwarded) return remote
-
-    /* return first in the list if there are many */
-    return String(forwarded).split(',')[0].trim()
+    this.routeMap.map[data.splatter.splat] = data.route.url
+    this.routeMap.routes[data.method][data.splatter.splat] = data.route
   }
 }
 
