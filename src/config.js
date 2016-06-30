@@ -31,8 +31,13 @@ export function updateConfig (opts = {}) {
   config.port = parseInt(opts.port, 10) || config.port
   config.timeout = parseInt(opts.timeout, 10) || config.timeout
   config.payloadLimit = parseInt(opts.payloadLimit, 10) || config.payloadLimit
-  if (opts.stripUnknown !== undefined) config.stripUnknown = opts.stripUnknown
-  if (opts.protect !== undefined) config.protect = opts.protect
+  /* values that can be boolean (can't use the || operator) */
+  if (opts.stripUnknown !== undefined) {
+    config.stripUnknown = opts.stripUnknown
+  }
+  if (opts.protect !== undefined) {
+    config.protect = opts.protect
+  }
   if (opts.logs !== undefined) {
     config.logs = opts.logs !== false
       ? Object.assign({}, config.logs, opts.logs)

@@ -17,14 +17,14 @@ export async function onRequest (request, response) {
   try {
     /* log request */
     const remoteAddress = getIpAddress(request)
-    if (config().logs.request) {
+    if (config.logs.request) {
       console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
     }
 
     /* setup timeout */
     let hasTimedOut = false
-    response.setTimeout(config().timeout, (socket) => {
-      const msg = `Max request time of ${config().timeout / 1000}s reached`
+    response.setTimeout(config.timeout, (socket) => {
+      const msg = `Max request time of ${config.timeout / 1000}s reached`
       sendResponse(response, 408, getError(408, msg))
 
       hasTimedOut = true
@@ -32,7 +32,7 @@ export async function onRequest (request, response) {
     })
 
     /* lookup from route map */
-    route = lookupRoute(request, config().routeMap)
+    route = lookupRoute(request, config.routeMap)
     if (!route) throw errors.notFound()
 
     const requestData = {}
@@ -72,7 +72,7 @@ export async function onRequest (request, response) {
 export function sendResponse (response, statusCode, data) {
   /* send proper status code and headers */
   response.statusCode = parseInt(statusCode, 10) || 200
-  response.setHeader('X-Powered-By', config().name)
+  response.setHeader('X-Powered-By', config.name)
   response.setHeader('Cache-Control', 'no-cache')
 
   /* send correct headers and response based on data type */
@@ -93,7 +93,7 @@ export function sendResponse (response, statusCode, data) {
           data = ''
         } else {
           /* only prettify in dev mode to take advantages of V8 optimizations */
-          data = config().isDev ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+          data = config.isDev() ? JSON.stringify(data, null, 2) : JSON.stringify(data)
           response.setHeader('Content-Type', 'application/json')
         }
       }
@@ -276,7 +276,7 @@ export function sendResponse (response, statusCode, data) {
 //         }
 //
 //         /* remove server errors unless in dev mode */
-//         if (statusCode >= 500 && !this.isDev && errorResponse.message) {
+//         if (statusCode >= 500 && !this.isDev() && errorResponse.message) {
 //           delete errorResponse.message
 //         }
 //       }

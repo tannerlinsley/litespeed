@@ -1,3 +1,4 @@
+import config from './config'
 import { escapeRegex } from './utils'
 
 /**
@@ -69,32 +70,32 @@ export function lookupRoute (config, routeMap) {
  * Creates a route and adds it to the route map.
  * @param {object} config - An airflow route config
  */
-export function createRoute (config) {
+export function createRoute (route) {
   // TODO: parse config as array(s) as well as object
   // TODO: check for a valid url
 
-  if (!config) {
+  if (!route) {
     throw new TypeError('Routes must have a configuration object')
   }
-  if (!config.method.match(/^(get|post|put|patch|delete)$/i)) {
+  if (!route.method.match(/^(get|post|put|patch|delete)$/i)) {
     throw new TypeError('Route method must be one of [ GET, POST, PUT, PATCH, DELETE ]')
   }
-  if (typeof config.url !== 'string') {
+  if (typeof route.url !== 'string') {
     throw new TypeError('Route URL must be a string')
   }
-  if (typeof config.handler !== 'function') {
+  if (typeof route.handler !== 'function') {
     throw new TypeError('Route handler must be a function!')
   }
 
   /* get regex url and and method type */
-  const regexUrl = expandUrl(config.url)
-  const method = config.method.toLowerCase()
+  const regexUrl = expandUrl(route.url)
+  const method = route.method.toLowerCase()
 
   /* make sure route isn't a duplicate */
-  if (config().routeMap[method][regexUrl]) {
-    throw new Error(`"${config.method} ${config.url}" is defined more than once`)
+  if (config.routeMap[method][regexUrl]) {
+    throw new Error(`"${route.method} ${route.url}" is defined more than once`)
   }
 
   /* add route to route map */
-  config().routeMap[method][regexUrl] = config
+  config.routeMap[method][regexUrl] = route
 }

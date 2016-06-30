@@ -2,9 +2,9 @@ try {
   require('source-map-support').install()
 } catch (err) { /* no source map support */ }
 
-import server from './server'
 import { updateConfig } from './config'
 import { createRoute } from './router'
+import server from './server'
 import Validation from './validation'
 import Errors from './errors'
 

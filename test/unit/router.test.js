@@ -1,5 +1,11 @@
 import test from 'ava'
-import * as router from '../../src/router'
+import proxyquire from 'proxyquire'
+import config from '../../src/config'
+
+const customConfig = { routeMap: { get: {} } }
+const router = proxyquire('../../src/router', {
+  './config': Object.assign(config, customConfig)
+})
 
 test('expandUrl', (t) => {
   t.is(router.expandUrl('/:name'), '^\\/[^\\/]+$')
@@ -33,17 +39,14 @@ test('lookupRoute', (t) => {
   t.falsy(router.lookupRoute(route3, routesMap))
 })
 
-// test('parseRoute', (t) => {
-//   const config = { method: 'GET', url: '/hello/:name', handler: () => {} }
-//   const routeMap = { routes: { get: {} } }
-//   const route = router.parseRoute(config, routeMap)
-//   t.is(route.method, 'get')
-//   t.is(route.splatter.url, '/hello/:name')
-//   t.is(route.splatter.splat, '/hello/*')
-//   t.deepEqual(route.route, config)
-//   t.throws(() => router.parseRoute(config, { routes: { get: { '/hello/:name': config } } }), Error, 'duplicate route')
-//   t.throws(() => router.parseRoute(), TypeError, 'no config')
-//   t.throws(() => router.parseRoute({ method: 'HI' }), TypeError, 'invalid method')
-//   t.throws(() => router.parseRoute({ method: 'GET' }), TypeError, 'invalid url')
-//   t.throws(() => router.parseRoute({ method: 'GET', url: '/', handler: 'hi' }), TypeError, 'invalid handler')
-// })
+test('createRoute', (t) => {
+  const route = { method: 'GET', url: '/hello/:name', handler: () => {} }
+  router.createRoute(route)
+  const data = customConfig.routeMap.get['^\\/hello\\/[^\\/]+$']
+  t.deepEqual(data, route)
+  t.throws(() => router.createRoute(route), Error, 'duplicate route')
+  t.throws(() => router.createRoute(), TypeError, 'no config')
+  t.throws(() => router.createRoute({ method: 'HI' }), TypeError, 'invalid method')
+  t.throws(() => router.createRoute({ method: 'GET' }), TypeError, 'invalid url')
+  t.throws(() => router.createRoute({ method: 'GET', url: '/', handler: 'hi' }), TypeError, 'invalid handler')
+})

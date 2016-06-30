@@ -17,9 +17,33 @@ test('config', (t) => {
 
 test('updateConfig', (t) => {
   process.env.NODE_ENV = 'production'
-  updateConfig({ name: 'Hi', host: '0.0.0.0', port: 7000 })
+  updateConfig({
+    name: 'Hi',
+    host: '0.0.0.0',
+    port: 7000,
+    stripUnknown: false,
+    protect: false,
+    logs: false
+  })
   t.is(config.name, 'Hi')
   t.is(config.host, '0.0.0.0')
   t.is(config.port, 7000)
+  t.false(config.stripUnknown)
+  t.false(config.protect)
+  t.false(config.logs.server)
   t.false(config.isDev())
+})
+
+test('updateConfig', (t) => {
+  process.env.NODE_ENV = 'production'
+  updateConfig()
+  t.is(config.name, 'Hi')
+})
+
+test('updateConfig', (t) => {
+  process.env.NODE_ENV = 'production'
+  updateConfig({
+    logs: { request: false }
+  })
+  t.false(config.logs.request)
 })

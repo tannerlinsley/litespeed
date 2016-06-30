@@ -1,6 +1,6 @@
 import validator from 'validator'
 
-class Validation {
+export default class Validation {
   constructor () {
     /* all rules to run against value */
     this.rules = []
@@ -295,8 +295,3 @@ class Validation {
     return this
   }
 }
-
-/* have to export the class and call with 'new' in the actual app. */
-/* this is because things get intertwined because of 'this.rules' if exported with new. */
-
-export default Validation
