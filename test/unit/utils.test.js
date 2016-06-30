@@ -11,3 +11,8 @@ test('getIpAddress', (t) => {
   t.is(utils.getIpAddress(request3), '0.0.0.0')
   t.is(utils.getIpAddress(request4), '0.0.0.0')
 })
+
+test('escapeRegex', (t) => {
+  t.is(utils.escapeRegex('^.*hello$'), '\\^\\.\\*hello\\$')
+  t.is(utils.escapeRegex('test'), 'test')
+})

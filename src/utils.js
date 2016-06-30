@@ -13,3 +13,12 @@ export function getIpAddress (request) {
   /* return first in the list if there are many */
   return String(forwarded).split(',')[0].trim()
 }
+
+/**
+ * Escapes spcial characters from a string for valid use as a regex.
+ * @param {string} str - The string to escape
+ * @returns {string} The regex-valid string
+ */
+export function escapeRegex (str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
+}

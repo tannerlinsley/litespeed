@@ -126,11 +126,6 @@ test('headersTooLarge', (t) => {
   t.deepEqual(errors.headersTooLarge('hey'), { statusCode: 431, error: 'Request Header Fields Too Large', message: 'hey' })
 })
 
-test('legal', (t) => {
-  t.deepEqual(errors.legal(), { statusCode: 451, error: 'Unavailable For Legal Reasons' })
-  t.deepEqual(errors.legal('hey'), { statusCode: 451, error: 'Unavailable For Legal Reasons', message: 'hey' })
-})
-
 test('internal', (t) => {
   t.deepEqual(errors.internal(), { statusCode: 500, error: 'Internal Server Error' })
   t.deepEqual(errors.internal('hey'), { statusCode: 500, error: 'Internal Server Error', message: 'hey' })

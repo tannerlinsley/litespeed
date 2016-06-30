@@ -26,7 +26,6 @@ export const errors = {
   preconditionRequired: (msg) => getError(428, msg),
   tooManyRequests: (msg) => getError(429, msg),
   headersTooLarge: (msg) => getError(431, msg),
-  legal: (msg) => getError(451, msg),
   internal: (msg) => getError(500, msg),
   notImplemented: (msg) => getError(501, msg),
   badGateway: (msg) => getError(502, msg),

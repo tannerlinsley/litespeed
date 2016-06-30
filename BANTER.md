@@ -27,6 +27,7 @@ Structure should be kept as simple as possible. One main entry file that exports
 - [x] Multiple character encodings / charsets
 - [ ] Endpoint diffs, showing what has changed, and what will be created/updated/deleted
 - [ ] Request throttling
+- [ ] Redirect trailing slashes
 - [x] Get requester's IP Address, taking into account proxies
 - [ ] Gzipping Response
 - [ ] Custom cache control
