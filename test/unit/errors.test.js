@@ -1,6 +1,26 @@
 import test from 'ava'
 import Errors, { cleanStackTrace } from '../../src/errors'
 
+test('constructor', (t) => {
+  t.deepEqual(new Errors(404), { statusCode: 404, error: 'Not Found' })
+  t.deepEqual(new Errors(500), { statusCode: 500, error: 'Internal Server Error' })
+  t.deepEqual(new Errors(500, 'hi'), { statusCode: 500, error: 'Internal Server Error', message: 'hi' })
+  t.deepEqual(new Errors(600), { statusCode: 600, error: 'Unknown Error' })
+})
+
+test('get', (t) => {
+  t.deepEqual(new Errors().get(404), { statusCode: 404, error: 'Not Found' })
+  t.deepEqual(new Errors().get(500), { statusCode: 500, error: 'Internal Server Error' })
+  t.deepEqual(new Errors().get(500, 'hi'), { statusCode: 500, error: 'Internal Server Error', message: 'hi' })
+  t.deepEqual(new Errors().get(600), { statusCode: 600, error: 'Unknown Error' })
+})
+
+test('cleanStackTrace', (t) => {
+  const stack = 'line1\nline2/node_modules/hi\nline3/node_modules/yo\nline4'
+  t.deepEqual(cleanStackTrace({ stack }), { stack: 'line1\nline4' })
+  t.deepEqual(cleanStackTrace({ hi: 'hi' }), { hi: 'hi' })
+})
+
 test('badRequest', (t) => {
   t.deepEqual(new Errors().badRequest(), { statusCode: 400, error: 'Bad Request' })
   t.deepEqual(new Errors().badRequest('hey'), { statusCode: 400, error: 'Bad Request', message: 'hey' })
@@ -179,17 +199,4 @@ test('notExtended', (t) => {
 test('networkAuthRequired', (t) => {
   t.deepEqual(new Errors().networkAuthRequired(), { statusCode: 511, error: 'Network Authentication Required' })
   t.deepEqual(new Errors().networkAuthRequired('hey'), { statusCode: 511, error: 'Network Authentication Required', message: 'hey' })
-})
-
-test('get', (t) => {
-  t.deepEqual(new Errors().get(404), { statusCode: 404, error: 'Not Found' })
-  t.deepEqual(new Errors().get(500), { statusCode: 500, error: 'Internal Server Error' })
-  t.deepEqual(new Errors().get(500, 'hi'), { statusCode: 500, error: 'Internal Server Error', message: 'hi' })
-  t.deepEqual(new Errors().get(600), { statusCode: 600, error: 'Unknown Error' })
-})
-
-test('cleanStackTrace', (t) => {
-  const stack = 'line1\nline2/node_modules/hi\nline3/node_modules/yo\nline4'
-  t.deepEqual(cleanStackTrace({ stack }), { stack: 'line1\nline4' })
-  t.deepEqual(cleanStackTrace({ hi: 'hi' }), { hi: 'hi' })
 })

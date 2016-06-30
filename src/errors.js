@@ -1,43 +1,10 @@
 import http from 'http'
 
 export default class Errors {
-  constructor () {
-    this.badRequest = (msg) => this.get(400, msg)
-    this.unauthorized = (msg) => this.get(401, msg)
-    this.paymentRequired = (msg) => this.get(402, msg)
-    this.forbidden = (msg) => this.get(403, msg)
-    this.notFound = (msg) => this.get(404, msg)
-    this.methodNotAllowed = (msg) => this.get(405, msg)
-    this.notAcceptable = (msg) => this.get(406, msg)
-    this.proxyAuthRequired = (msg) => this.get(407, msg)
-    this.requestTimeout = (msg) => this.get(408, msg)
-    this.conflict = (msg) => this.get(409, msg)
-    this.gone = (msg) => this.get(410, msg)
-    this.lengthRequired = (msg) => this.get(411, msg)
-    this.preconditionFailed = (msg) => this.get(412, msg)
-    this.payloadTooLarge = (msg) => this.get(413, msg)
-    this.uriTooLong = (msg) => this.get(414, msg)
-    this.unsupportedMediaType = (msg) => this.get(415, msg)
-    this.rangeNotSatisfiable = (msg) => this.get(416, msg)
-    this.expectationFailed = (msg) => this.get(417, msg)
-    this.unprocessableEntity = (msg) => this.get(422, msg)
-    this.locked = (msg) => this.get(423, msg)
-    this.failedDependency = (msg) => this.get(424, msg)
-    this.upgradeRequired = (msg) => this.get(426, msg)
-    this.preconditionRequired = (msg) => this.get(428, msg)
-    this.tooManyRequests = (msg) => this.get(429, msg)
-    this.headersTooLarge = (msg) => this.get(431, msg)
-    this.internal = (msg) => this.get(500, msg)
-    this.notImplemented = (msg) => this.get(501, msg)
-    this.badGateway = (msg) => this.get(502, msg)
-    this.serviceUnavailable = (msg) => this.get(503, msg)
-    this.gatewayTimeout = (msg) => this.get(504, msg)
-    this.httpVersionNotSupported = (msg) => this.get(505, msg)
-    this.insufficientStorage = (msg) => this.get(507, msg)
-    this.loopDetected = (msg) => this.get(508, msg)
-    this.bandwidthLimitExceeded = (msg) => this.get(509, msg)
-    this.notExtended = (msg) => this.get(510, msg)
-    this.networkAuthRequired = (msg) => this.get(511, msg)
+  constructor (statusCode, message) {
+    if (statusCode) {
+      return this.get(statusCode, message)
+    }
   }
 
   /**
@@ -56,6 +23,154 @@ export default class Errors {
     if (message) err.message = message
 
     return err
+  }
+
+  // ---------------------------------------------------------------------------
+  // predefined errors
+  // ---------------------------------------------------------------------------
+
+  badRequest (msg) {
+    return this.get(400, msg)
+  }
+
+  unauthorized (msg) {
+    return this.get(401, msg)
+  }
+
+  paymentRequired (msg) {
+    return this.get(402, msg)
+  }
+
+  forbidden (msg) {
+    return this.get(403, msg)
+  }
+
+  notFound (msg) {
+    return this.get(404, msg)
+  }
+
+  methodNotAllowed (msg) {
+    return this.get(405, msg)
+  }
+
+  notAcceptable (msg) {
+    return this.get(406, msg)
+  }
+
+  proxyAuthRequired (msg) {
+    return this.get(407, msg)
+  }
+
+  requestTimeout (msg) {
+    return this.get(408, msg)
+  }
+
+  conflict (msg) {
+    return this.get(409, msg)
+  }
+
+  gone (msg) {
+    return this.get(410, msg)
+  }
+
+  lengthRequired (msg) {
+    return this.get(411, msg)
+  }
+
+  preconditionFailed (msg) {
+    return this.get(412, msg)
+  }
+
+  payloadTooLarge (msg) {
+    return this.get(413, msg)
+  }
+
+  uriTooLong (msg) {
+    return this.get(414, msg)
+  }
+
+  unsupportedMediaType (msg) {
+    return this.get(415, msg)
+  }
+
+  rangeNotSatisfiable (msg) {
+    return this.get(416, msg)
+  }
+
+  expectationFailed (msg) {
+    return this.get(417, msg)
+  }
+
+  unprocessableEntity (msg) {
+    return this.get(422, msg)
+  }
+
+  locked (msg) {
+    return this.get(423, msg)
+  }
+
+  failedDependency (msg) {
+    return this.get(424, msg)
+  }
+
+  upgradeRequired (msg) {
+    return this.get(426, msg)
+  }
+
+  preconditionRequired (msg) {
+    return this.get(428, msg)
+  }
+
+  tooManyRequests (msg) {
+    return this.get(429, msg)
+  }
+
+  headersTooLarge (msg) {
+    return this.get(431, msg)
+  }
+
+  internal (msg) {
+    return this.get(500, msg)
+  }
+
+  notImplemented (msg) {
+    return this.get(501, msg)
+  }
+
+  badGateway (msg) {
+    return this.get(502, msg)
+  }
+
+  serviceUnavailable (msg) {
+    return this.get(503, msg)
+  }
+
+  gatewayTimeout (msg) {
+    return this.get(504, msg)
+  }
+
+  httpVersionNotSupported (msg) {
+    return this.get(505, msg)
+  }
+
+  insufficientStorage (msg) {
+    return this.get(507, msg)
+  }
+
+  loopDetected (msg) {
+    return this.get(508, msg)
+  }
+
+  bandwidthLimitExceeded (msg) {
+    return this.get(509, msg)
+  }
+
+  notExtended (msg) {
+    return this.get(510, msg)
+  }
+
+  networkAuthRequired (msg) {
+    return this.get(511, msg)
   }
 }
 
