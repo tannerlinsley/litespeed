@@ -1,40 +1,43 @@
-const config = (opts = {}) => ({
-  /* get environment */
-  env: String(process.env.NODE_ENV),
-
+const config = {
   /* whether we are in dev mode */
-  isDev: config.env.match(/dev/i),
-
+  isDev: String(process.env.NODE_ENV).match(/dev/i),
   /* set server name (displays as Server header) */
-  name: opts.name || 'Airflow',
-
+  name: 'Airflow',
   /* the host to run on */
-  host: opts.host || 'localhost',
-
+  host: 'localhost',
   /* the port to run on */
-  port: parseInt(opts.port, 10) || 8000,
-
+  port: 8000,
   /* request timeout limit (5s default) */
-  timeout: parseInt(opts.timeout, 10) || 5000,
-
-  /* strip unknown values from payloads/queries */
-  stripUnknown: opts.stripUnknown || true,
-
+  timeout: 5000,
   /* limit for payload size in bytes (1mb default) */
-  payloadLimit: parseInt(opts.payloadLimit, 10) || 1048576,
-
+  payloadLimit: 1048576,
+  /* strip unknown values from payloads/queries */
+  stripUnknown: true,
   /* whether to add basic security headers */
-  protect: opts.protect || true,
-
+  protect: true,
   /* setup log tags */
-  logs: opts.logs !== false
-    ? Object.assign({}, { server: true, request: true, error: true }, opts.logs || {})
-    : { server: false, request: false, error: false }, // turns all logging off
-
+  logs: { server: true, request: true, error: true },
   /* the global route map */
-  routeMap: {
-    get: {}, post: {}, put: {}, patch: {}, delete: {}
+  routeMap: { get: {}, post: {}, put: {}, patch: {}, delete: {} }
+}
+
+/**
+ * Updates the config map with custom values.
+ * @param {object} opts - Config options
+ */
+export function updateConfig (opts = {}) {
+  config.name = opts.name || config.name
+  config.host = opts.host || config.host
+  config.port = parseInt(opts.port, 10) || config.port
+  config.timeout = parseInt(opts.timeout, 10) || config.timeout
+  config.payloadLimit = parseInt(opts.payloadLimit, 10) || config.payloadLimit
+  if (opts.stripUnknown !== undefined) config.stripUnknown = opts.stripUnknown
+  if (opts.protect !== undefined) config.protect = opts.protect
+  if (opts.logs !== undefined) {
+    config.logs = opts.logs !== false
+      ? Object.assign({}, config.logs, opts.logs)
+      : { server: false, request: false, error: false }
   }
-})
+}
 
 export default config
