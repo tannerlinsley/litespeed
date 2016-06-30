@@ -1,60 +1,62 @@
 import http from 'http'
 
-export const errors = {
-  badRequest: (msg) => getError(400, msg),
-  unauthorized: (msg) => getError(401, msg),
-  paymentRequired: (msg) => getError(402, msg),
-  forbidden: (msg) => getError(403, msg),
-  notFound: (msg) => getError(404, msg),
-  methodNotAllowed: (msg) => getError(405, msg),
-  notAcceptable: (msg) => getError(406, msg),
-  proxyAuthRequired: (msg) => getError(407, msg),
-  requestTimeout: (msg) => getError(408, msg),
-  conflict: (msg) => getError(409, msg),
-  gone: (msg) => getError(410, msg),
-  lengthRequired: (msg) => getError(411, msg),
-  preconditionFailed: (msg) => getError(412, msg),
-  payloadTooLarge: (msg) => getError(413, msg),
-  uriTooLong: (msg) => getError(414, msg),
-  unsupportedMediaType: (msg) => getError(415, msg),
-  rangeNotSatisfiable: (msg) => getError(416, msg),
-  expectationFailed: (msg) => getError(417, msg),
-  unprocessableEntity: (msg) => getError(422, msg),
-  locked: (msg) => getError(423, msg),
-  failedDependency: (msg) => getError(424, msg),
-  upgradeRequired: (msg) => getError(426, msg),
-  preconditionRequired: (msg) => getError(428, msg),
-  tooManyRequests: (msg) => getError(429, msg),
-  headersTooLarge: (msg) => getError(431, msg),
-  internal: (msg) => getError(500, msg),
-  notImplemented: (msg) => getError(501, msg),
-  badGateway: (msg) => getError(502, msg),
-  serviceUnavailable: (msg) => getError(503, msg),
-  gatewayTimeout: (msg) => getError(504, msg),
-  httpVersionNotSupported: (msg) => getError(505, msg),
-  insufficientStorage: (msg) => getError(507, msg),
-  loopDetected: (msg) => getError(508, msg),
-  bandwidthLimitExceeded: (msg) => getError(509, msg),
-  notExtended: (msg) => getError(510, msg),
-  networkAuthRequired: (msg) => getError(511, msg)
-}
-
-/**
- * Gets an error from predefined Node status codes, and
- * returns a formatted Airflow response.
- * @param {number} statusCode - The status code to lookup/use
- * @param {string} message - An optional response message
- * @return {object} The response object
- */
-export function getError (statusCode, message) {
-  const err = {
-    statusCode,
-    error: http.STATUS_CODES[statusCode] || 'Unknown Error'
+export default class Errors {
+  constructor () {
+    this.badRequest = (msg) => this.get(400, msg)
+    this.unauthorized = (msg) => this.get(401, msg)
+    this.paymentRequired = (msg) => this.get(402, msg)
+    this.forbidden = (msg) => this.get(403, msg)
+    this.notFound = (msg) => this.get(404, msg)
+    this.methodNotAllowed = (msg) => this.get(405, msg)
+    this.notAcceptable = (msg) => this.get(406, msg)
+    this.proxyAuthRequired = (msg) => this.get(407, msg)
+    this.requestTimeout = (msg) => this.get(408, msg)
+    this.conflict = (msg) => this.get(409, msg)
+    this.gone = (msg) => this.get(410, msg)
+    this.lengthRequired = (msg) => this.get(411, msg)
+    this.preconditionFailed = (msg) => this.get(412, msg)
+    this.payloadTooLarge = (msg) => this.get(413, msg)
+    this.uriTooLong = (msg) => this.get(414, msg)
+    this.unsupportedMediaType = (msg) => this.get(415, msg)
+    this.rangeNotSatisfiable = (msg) => this.get(416, msg)
+    this.expectationFailed = (msg) => this.get(417, msg)
+    this.unprocessableEntity = (msg) => this.get(422, msg)
+    this.locked = (msg) => this.get(423, msg)
+    this.failedDependency = (msg) => this.get(424, msg)
+    this.upgradeRequired = (msg) => this.get(426, msg)
+    this.preconditionRequired = (msg) => this.get(428, msg)
+    this.tooManyRequests = (msg) => this.get(429, msg)
+    this.headersTooLarge = (msg) => this.get(431, msg)
+    this.internal = (msg) => this.get(500, msg)
+    this.notImplemented = (msg) => this.get(501, msg)
+    this.badGateway = (msg) => this.get(502, msg)
+    this.serviceUnavailable = (msg) => this.get(503, msg)
+    this.gatewayTimeout = (msg) => this.get(504, msg)
+    this.httpVersionNotSupported = (msg) => this.get(505, msg)
+    this.insufficientStorage = (msg) => this.get(507, msg)
+    this.loopDetected = (msg) => this.get(508, msg)
+    this.bandwidthLimitExceeded = (msg) => this.get(509, msg)
+    this.notExtended = (msg) => this.get(510, msg)
+    this.networkAuthRequired = (msg) => this.get(511, msg)
   }
 
-  if (message) err.message = message
+  /**
+   * Gets an error from predefined Node status codes, and
+   * returns a formatted Airflow response.
+   * @param {number} statusCode - The status code to lookup/use
+   * @param {string} message - An optional response message
+   * @return {object} The response object
+   */
+  get (statusCode, message) {
+    const err = {
+      statusCode,
+      error: http.STATUS_CODES[statusCode] || 'Unknown Error'
+    }
 
-  return err
+    if (message) err.message = message
+
+    return err
+  }
 }
 
 /**
