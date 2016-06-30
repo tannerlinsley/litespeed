@@ -1,33 +1,24 @@
-import http from 'http'
-import { onRequest } from './request'
-import validation from './validation'
-import { errors } from './errors'
+try {
+  require('source-map-support').install()
+} catch (err) { /* no source map support */ }
+
+import server from './server'
+import { updateConfig } from './config'
+import { createRoute } from './router'
+import Validation from './validation'
+import Errors from './errors'
 
 class Airflow {
-  /**
-   * Creates the server and begins listening.
-   * @param {object} opts - Server options
-   * @returns {promise} Resolves with the server url
-   */
-  start () {
-    /* create http server and setup request handler */
-    const server = http.createServer(onRequest)
-    const url = `http://${this.host}:${this.port}`
+  constructor (opts) {
+    /* set custom config options */
+    updateConfig(opts)
 
-    server.timeout = this.timeout
-
-    /* returns a promise resolving with the server url */
-    return new Promise((resolve, reject) => {
-      server.listen(this.port, this.host, () => {
-        if (this.logs.server) {
-          console.log(`=> Running at ${url}`)
-        }
-        resolve(url)
-      })
-    })
+    /* define front-facing API methods */
+    this.routes = createRoute
+    this.start = server
   }
 }
 
 module.exports = Airflow
-module.exports.Errors = errors
-module.exports.Validator = validation
+module.exports.Validator = Validation
+module.exports.Errors = Errors
