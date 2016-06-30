@@ -1,6 +1,4 @@
 const config = {
-  /* whether we are in dev mode */
-  isDev: String(process.env.NODE_ENV).match(/dev/i),
   /* set server name (displays as Server header) */
   name: 'Airflow',
   /* the host to run on */
@@ -18,7 +16,9 @@ const config = {
   /* setup log tags */
   logs: { server: true, request: true, error: true },
   /* the global route map */
-  routeMap: { get: {}, post: {}, put: {}, patch: {}, delete: {} }
+  routeMap: { get: {}, post: {}, put: {}, patch: {}, delete: {} },
+  /* whether we are in dev mode */
+  isDev: () => Boolean(String(process.env.NODE_ENV).match(/dev/i))
 }
 
 /**
