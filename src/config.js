@@ -14,7 +14,7 @@ const config = {
   /* whether to add basic security headers */
   protect: true,
   /* setup log tags */
-  logs: { server: true, request: true, error: true },
+  log: { server: true, request: true, error: true },
   /* the global route map */
   routeMap: { get: {}, post: {}, put: {}, patch: {}, delete: {} },
   /* whether we are in dev mode */
@@ -38,9 +38,9 @@ export function updateConfig (opts = {}) {
   if (opts.protect !== undefined) {
     config.protect = opts.protect
   }
-  if (opts.logs !== undefined) {
-    config.logs = opts.logs !== false
-      ? Object.assign({}, config.logs, opts.logs)
+  if (opts.log !== undefined) {
+    config.log = opts.log !== false
+      ? Object.assign({}, config.log, opts.log)
       : { server: false, request: false, error: false }
   }
 }

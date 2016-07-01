@@ -17,7 +17,7 @@ export async function onRequest (request, response) {
   try {
     /* log request info */
     const remoteAddress = getIpAddress(request)
-    if (config.logs.request) {
+    if (config.log.request) {
       console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
     }
 
@@ -123,7 +123,7 @@ export async function onError (response, error, route) {
 
     /* display and log server errors correctly */
     if (statusCode >= 500) {
-      if (config.logs.error) {
+      if (config.log.error) {
         let toLog = error
 
         /* turn into an error if needed */

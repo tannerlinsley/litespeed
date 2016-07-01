@@ -23,14 +23,14 @@ test.todo('handler timeout')
 
 test.todo('runValidations (deep)')
 test('runValidations (passed)', async (t) => {
-  const route = { validation: { body: { email: new Validator().isEmail() } } }
+  const route = { validate: { body: { email: new Validator().isEmail() } } }
   const data = { body: { email: 'j@maur.co' } }
   await t.notThrows(request.runValidations(route, data))
 })
 
 test('runValidations (failed)', async (t) => {
   const route = {
-    validation: {
+    validate: {
       body: { email: new Validator().isEmail() },
       query: { test: new Validator().required() },
       params: { test: new Validator().required() },

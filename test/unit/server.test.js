@@ -3,12 +3,12 @@ import sinon from 'sinon'
 import proxyquire from 'proxyquire'
 import config from '../../src/config'
 
-const logs = { server: true }
+const log = { server: true }
 const server = proxyquire('../../src/server', {
   'http': {
     createServer: () => ({ listen: (_, __, cb) => cb() })
   },
-  './config': Object.assign(config, { logs })
+  './config': Object.assign(config, { log })
 }).default
 
 test('start', async (t) => {
@@ -19,7 +19,7 @@ test('start', async (t) => {
 })
 
 test('start (no logging)', async (t) => {
-  logs.server = false
+  log.server = false
   sinon.stub(console, 'log')
   t.regex(await server(), /localhost/)
   t.false(console.log.called)

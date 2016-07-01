@@ -18,8 +18,8 @@ class Airflow {
       createRoute(config)
       return this
     }
-    this.start = () => {
-      server()
+    this.start = (cb) => {
+      server(cb)
       return this
     }
   }
