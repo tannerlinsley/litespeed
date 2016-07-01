@@ -4,6 +4,7 @@ try {
 
 import { updateConfig } from './config'
 import { createRoute } from './router'
+import inject from './inject'
 import server from './server'
 import Validation from './validation'
 import Errors from './errors'
@@ -14,13 +15,18 @@ class Airflow {
     updateConfig(opts)
 
     /* define front-facing API methods */
-    this.routes = (config) => {
-      createRoute(config)
+    this.routes = (route) => {
+      createRoute(route)
       return this
     }
-    this.start = (cb) => {
-      server(cb)
+
+    this.start = async (cb) => {
+      await server(cb)
       return this
+    }
+
+    this.inject = (route) => {
+      return inject(route)
     }
   }
 }
