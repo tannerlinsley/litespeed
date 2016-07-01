@@ -66,11 +66,21 @@ test('lookupRoute', (t) => {
 test('createRoute', (t) => {
   const route = { method: 'GET', url: '/whatup', handler: () => {} }
   router.createRoute(route)
-  const data = customConfig.routeMap.get['^\\/whatup$']
-  t.deepEqual(data, route)
+  t.deepEqual(customConfig.routeMap.get['^\\/whatup$'], route)
   t.throws(() => router.createRoute(route), Error, 'duplicate route')
   t.throws(() => router.createRoute(), TypeError, 'no config')
   t.throws(() => router.createRoute({ method: 'HI' }), TypeError, 'invalid method')
   t.throws(() => router.createRoute({ method: 'GET' }), TypeError, 'invalid url')
   t.throws(() => router.createRoute({ method: 'GET', url: '/', handler: 'hi' }), TypeError, 'invalid handler')
+})
+
+test('createRoute (arrays)', (t) => {
+  customConfig.routeMap.get = {}
+  const routes = [
+    { method: 'GET', url: '/', handler: () => {} },
+    { method: 'GET', url: '/whatup', handler: () => {} }
+  ]
+  router.createRoute(routes)
+  t.deepEqual(customConfig.routeMap.get['^\\/$'], routes[0])
+  t.deepEqual(customConfig.routeMap.get['^\\/whatup$'], routes[1])
 })

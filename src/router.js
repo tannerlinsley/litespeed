@@ -97,8 +97,10 @@ export function lookupRoute (route) {
  * @param {object} config - An airflow route config
  */
 export function createRoute (route) {
-  // TODO: parse config as array(s) as well as object
-  // TODO: check for a valid url
+  /* if route is an array of routes, run for each one */
+  if (Array.isArray(route)) {
+    return route.forEach(createRoute)
+  }
 
   if (!route) {
     throw new TypeError('Routes must have a configuration object')
@@ -107,6 +109,7 @@ export function createRoute (route) {
     throw new TypeError('Route method must be one of [ GET, POST, PUT, PATCH, DELETE ]')
   }
   if (typeof route.url !== 'string') {
+    // TODO: check for a valid url
     throw new TypeError('Route URL must be a string')
   }
   if (typeof route.handler !== 'function') {
