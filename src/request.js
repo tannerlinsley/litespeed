@@ -15,12 +15,6 @@ import Errors, { cleanStackTrace } from './errors'
 export async function onRequest (request, response) {
   let route
   try {
-    /* log request info */
-    const remoteAddress = getIpAddress(request)
-    if (config.log.request) {
-      console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
-    }
-
     /* set timeout, and send 408 when it happens */
     let hasTimedOut = false
     response.setTimeout(config.timeout, (socket) => {
@@ -51,8 +45,7 @@ export async function onRequest (request, response) {
       params: getParamData(request.url, route.url),
       headers: request.headers,
       info: {
-        /* defined above for logging purposes */
-        remoteAddress
+        remoteAddress: getIpAddress(request)
       }
     }
 
@@ -64,6 +57,12 @@ export async function onRequest (request, response) {
 
     /* validate data */
     await runValidations(route, requestData)
+
+    /* log request info */
+    if (config.log.request) {
+      const { remoteAddress } = requestData.info
+      console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
+    }
 
     /* run handler */
     const handlerResult = route.handler(requestData, responseData)
