@@ -8,20 +8,20 @@ import { getIpAddress } from './utils'
 import Errors, { cleanStackTrace } from './errors'
 
 /**
- * The server's request handler.
+ * The server's main request handler.
  * @param {object} request - The http server request
  * @param {object} response - The http server response
  */
 export async function onRequest (request, response) {
   let route
   try {
-    /* log request */
+    /* log request info */
     const remoteAddress = getIpAddress(request)
     if (config.logs.request) {
       console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
     }
 
-    /* setup timeout */
+    /* set timeout, and send 408 when it happens */
     let hasTimedOut = false
     response.setTimeout(config.timeout, (socket) => {
       const msg = `Max request time of ${config.timeout / 1000}s reached`
@@ -40,10 +40,14 @@ export async function onRequest (request, response) {
     /* route not found */
     if (!route) throw new Errors().notFound()
 
+    /* default values */
+    route.validation = route.validation || {}
+    route.statusCode = route.statusCode || 200
+
     /* put together request data */
     const requestData = {
-      body: await getBodyData(request),
-      query: getQueryData(request),
+      body: stripUnknownData(await getBodyData(request), route.validation.body),
+      query: stripUnknownData(getQueryData(request), route.validation.query),
       params: getParamData(request.url, route.url),
       headers: request.headers,
       info: {
@@ -56,6 +60,9 @@ export async function onRequest (request, response) {
     const responseData = {
       setHeader: (name, value) => response.setHeader(name, value)
     }
+
+    /* validate data */
+    await runValidations(route, requestData)
 
     /* run handler */
     const handlerResult = route.handler(requestData, responseData)
@@ -142,7 +149,10 @@ export async function onError (response, error, route) {
 }
 
 /**
- *
+ * Gets the body data of the request based on the content type.
+ * Puts payload limit in place, and parses data appropriately.
+ * @param {object} request - The http server request
+ * @returns {object} The body data
  */
 export async function getBodyData (request) {
   /* parse content type so we can process data */
@@ -186,59 +196,66 @@ export async function getBodyData (request) {
   return body
 }
 
-// /* run validations */
-// await new Promise((resolve, reject) => {
-//   const allErrors = []
-//
-//   /* defaults */
-//   route.validation = route.validation || {}
-//   route.validation.body = route.validation.body || {}
-//   route.validation.query = route.validation.query || {}
-//   route.validation.params = route.validation.params || {}
-//
-//   /* strip unknown body/query values */
-//   if (this.stripUnknown) {
-//     const bodyValidationKeys = Object.keys(route.validation.body)
-//     if (bodyValidationKeys.length > 0) {
-//       for (const i in body) {
-//         if (bodyValidationKeys.indexOf(i) < 0) delete body[i]
-//       }
-//     }
-//
-//     const queryValidationKeys = Object.keys(route.validation.query)
-//     if (queryValidationKeys.length > 0) {
-//       for (const i in query) {
-//         if (queryValidationKeys.indexOf(i) < 0) delete query[i]
-//       }
-//     }
-//   }
-//
-//   /* validate body data */
-//   for (const i in route.validation.body) {
-//     const validateResult = route.validation.body[i].run(i, body[i])
-//     if (validateResult.length > 0) allErrors.push(validateResult)
-//   }
-//
-//   /* validate query data */
-//   for (const i in route.validation.query) {
-//     const validateResult = route.validation.query[i].run(i, query[i], 'query')
-//     if (validateResult.length > 0) allErrors.push(validateResult)
-//   }
-//
-//   /* validate params data */
-//   for (const i in route.validation.params) {
-//     const validateResult = route.validation.params[i].run(i, params[i], 'params')
-//     if (validateResult.length > 0) allErrors.push(validateResult)
-//   }
-//
-//   /* reject with 400 error and validation errors if there are any */
-//   if (allErrors.length > 0) {
-//     return reject({
-//       ...errors.badRequest('A validation error occured'),
-//       validation: allErrors
-//     })
-//   }
-//
-//   resolve()
-// })
-//
+/**
+ * If validations are present on a route, this will strip all unknown
+ * data from the payload (meaning it's not in the validation map).
+ * @param {object} data - The data to strip from
+ * @param {object} validations - The validations object for the payload type
+ * @returns {object} The new data object excluding stripped values
+ */
+export function stripUnknownData (data, validations) {
+  if (!config.stripUnknown) return data
+
+  // TODO: deep objects?
+  const newData = {}
+
+  const keys = Object.keys(validations || {})
+  if (keys.length === 0) return data
+
+  for (const i in data) {
+    if (keys.indexOf(i) !== -1) {
+      newData[i] = data[i]
+    }
+  }
+
+  return newData
+}
+
+/**
+ * Runs validation rules against the body, query, and param payloads.
+ * Will return a 400 validation error to the user if any validation fails.
+ * All validation errors will return rather than the first one.
+ * @param {object} route - The airflow route object
+ * @param {object} data - The data to validate against
+ * @returns {promise} Rejected if any errors occur
+ */
+export async function runValidations (route, data) {
+  /* will contain all validation errors that occur throughout function */
+  let allErrors = []
+
+  /* set defaults */
+  const validation = Object.assign({}, {
+    body: {}, query: {}, params: {}
+  }, route.validation || {})
+
+  /* goes through each rule and validates against value */
+  const validate = (key) => {
+    for (const i in validation[key]) {
+      const validateResult = validation[key][i].run(i, data[key][i], key)
+      if (validateResult.length > 0) allErrors = allErrors.concat(validateResult)
+    }
+  }
+
+  /* run validations */
+  validate('body')
+  validate('query')
+  validate('params')
+
+  /* throw if there are any errors */
+  if (allErrors.length > 0) {
+    const baseError = new Errors().badRequest('A validation error occured')
+    const error = { ...baseError, validation: allErrors }
+
+    throw error
+  }
+}
