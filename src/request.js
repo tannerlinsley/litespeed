@@ -206,7 +206,6 @@ export async function getBodyData (request) {
 export function stripUnknownData (data, validations) {
   if (!config.stripUnknown) return data
 
-  // TODO: deep objects?
   const newData = {}
 
   const keys = Object.keys(validations || {})
@@ -236,7 +235,7 @@ export async function runValidations (route, data) {
   /* set defaults */
   const validation = Object.assign({}, {
     body: {}, query: {}, params: {}
-  }, route.validation || {})
+  }, route.validation)
 
   /* goes through each rule and validates against value */
   const validate = (key) => {
