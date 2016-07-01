@@ -92,9 +92,11 @@
   },
   "ava": {
     "serial": true,
-    "require": [
-      "babel-register"
-    ]
+    "require": "babel-register",
+    "babel": {
+      "babelrc": true,
+      "sourceMaps": "inline"
+    }
   },
   "nyc": {
     "include": [

@@ -1,3 +1,4 @@
+import qs from 'querystring'
 import config from './config'
 import { escapeRegex } from './utils'
 
@@ -20,7 +21,7 @@ export function expandUrl (url, esc = true) {
     let val = esc ? escapeRegex(seg) : seg
 
     /* match segments */
-    if (seg.match(/^:/)) val = '[^\\/]+'
+    if (seg.match(/^:/)) val = '[^\\/\\?]+'
     /* add end of line flag */
     if (idx === (split.length - 1)) val += '$'
 
@@ -34,12 +35,12 @@ export function expandUrl (url, esc = true) {
  * @param {string} fromUrl - The url pattern to use
  * @returns {object} The segment data
  */
-export function getSegmentData (url, fromUrl) {
+export function getParamData (url, fromUrl) {
   if (typeof url !== 'string' || typeof fromUrl !== 'string') {
     throw new TypeError('URL must be a string')
   }
 
-  const urlSplit = url.split('/')
+  const urlSplit = removeUrlQuery(url).split('/')
   const data = {}
 
   fromUrl.split('/').forEach((seg, indx) => {
@@ -51,16 +52,41 @@ export function getSegmentData (url, fromUrl) {
 }
 
 /**
+ * Extracts and parses query data from the request.
+ * @param {object} request - The http server request
+ * @returns {object} The query data
+ */
+export function getQueryData (request = {}) {
+  if (typeof request.url !== 'string') {
+    throw new TypeError('Param must be an object with a URL key')
+  }
+
+  const match = request.url.match(/\?.*$/)
+  return match ? qs.parse(match[0].substring(1)) : {}
+}
+
+/**
+ * Removes the query string from a url for proper lookups.
+ * @param {string} url - The URL to process
+ * @returns {string} The processed URL
+ */
+export function removeUrlQuery (url = '') {
+  const match = url.match(/\?/) || {}
+  if (match.index) url = url.substring(0, match.index)
+
+  return url
+}
+
+/**
  * Match a route in the route map.
  * @param {object} config - The airflow route object
- * @param {object} routeMap - The global routes map
  * @returns {object} The route that was found
  */
-export function lookupRoute (config, routeMap) {
-  const methodMap = routeMap[config.method.toLowerCase()]
+export function lookupRoute (route) {
+  const methodMap = config.routeMap[route.method.toLowerCase()]
 
   const key = Object.keys(methodMap).find((r) => {
-    return config.url.match(new RegExp(r))
+    return route.url.match(new RegExp(r))
   })
 
   return methodMap[key]
