@@ -250,6 +250,7 @@ export async function runValidations (route, data) {
   validate('body')
   validate('query')
   validate('params')
+  validate('headers')
 
   /* throw if there are any errors */
   if (allErrors.length > 0) {
