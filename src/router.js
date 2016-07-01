@@ -1,3 +1,5 @@
+import path from 'path'
+import glob from 'glob'
 import qs from 'querystring'
 import config from './config'
 import { escapeRegex } from './utils'
@@ -97,6 +99,10 @@ export function lookupRoute (route) {
  * @param {object} config - An airflow route config
  */
 export function createRoute (route) {
+  /* route is a dir pattern, go through files */
+  if (route.dir) {
+    return getAllRoutes(route.dir, route.cwd)
+  }
   /* if route is an array of routes, run for each one */
   if (Array.isArray(route)) {
     return route.forEach(createRoute)
@@ -127,4 +133,18 @@ export function createRoute (route) {
 
   /* add route to route map */
   config.routeMap[method][regexUrl] = route
+}
+
+/**
+ * Will walk a directory and get all routes matching a glob pattern.
+ * @param {string} dir - The directory to walk
+ */
+export function getAllRoutes (dir, cwd) {
+  /* resolve to absolute directory */
+  dir = path.resolve(cwd || process.cwd(), dir)
+
+  glob.sync(dir).forEach((file) => {
+    const routes = require(file)
+    createRoute(routes.default || routes)
+  })
 }
