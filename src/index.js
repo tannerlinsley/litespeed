@@ -14,8 +14,14 @@ class Airflow {
     updateConfig(opts)
 
     /* define front-facing API methods */
-    this.routes = createRoute
-    this.start = server
+    this.routes = (config) => {
+      createRoute(config)
+      return this
+    }
+    this.start = () => {
+      server()
+      return this
+    }
   }
 }
 

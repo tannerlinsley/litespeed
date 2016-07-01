@@ -41,13 +41,13 @@ export async function onRequest (request, response) {
     if (!route) throw new Errors().notFound()
 
     /* default values */
-    route.validation = route.validation || {}
+    route.validate = route.validate || {}
     route.statusCode = route.statusCode || 200
 
     /* put together request data */
     const requestData = {
-      body: stripUnknownData(await getBodyData(request), route.validation.body),
-      query: stripUnknownData(getQueryData(request), route.validation.query),
+      body: stripUnknownData(await getBodyData(request), route.validate.body),
+      query: stripUnknownData(getQueryData(request), route.validate.query),
       params: getParamData(request.url, route.url),
       headers: request.headers,
       info: {
@@ -236,7 +236,7 @@ export async function runValidations (route, data) {
   /* set defaults */
   const validation = Object.assign({}, {
     body: {}, query: {}, params: {}
-  }, route.validation)
+  }, route.validate)
 
   /* goes through each rule and validates against value */
   const validate = (key) => {
