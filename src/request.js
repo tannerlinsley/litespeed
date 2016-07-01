@@ -58,7 +58,8 @@ export async function onRequest (request, response) {
 
     /* functions exposed to handler response arg */
     const responseData = {
-      setHeader: (name, value) => response.setHeader(name, value)
+      setHeader: (name, value) => response.setHeader(name, value),
+      redirect: (url) => (response._redirectTo = url)
     }
 
     /* validate data */

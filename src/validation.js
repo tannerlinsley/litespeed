@@ -217,7 +217,7 @@ export default class Validation {
   isLength (opts) {
     const msg = this.humanizeLimit({ ...opts, noSpace: true })
     this.rules.push({
-      message: `must have byte length ${msg}`,
+      message: `must have length ${msg}`,
       validate: (val) => validator.isLength(val, opts)
     })
     return this

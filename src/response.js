@@ -10,6 +10,14 @@ import config from './config'
  * @param {any} data - Data to send as the response
  */
 export function sendResponse (response, statusCode, data) {
+  /* if a redirect was set from the handler */
+  if (response._redirectTo) {
+    response.statusCode = 301
+    response.setHeader('Location', response._redirectTo)
+    response.end(`Redirecting to ${response._redirectTo}`)
+    return
+  }
+
   /* send proper status code and headers */
   response.statusCode = parseInt(statusCode, 10) || 200
   response.setHeader('X-Powered-By', config.name)
