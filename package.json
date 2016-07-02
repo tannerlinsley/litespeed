@@ -27,6 +27,7 @@
     "aws"
   ],
   "files": [
+    "bin/",
     "lib/",
     "LICENSE",
     "README.md"
