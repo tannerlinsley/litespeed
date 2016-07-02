@@ -13,15 +13,15 @@ const server = proxyquire('../../src/server', {
 
 test('start', async (t) => {
   sinon.stub(console, 'log')
-  t.regex(await server(), /localhost/)
-  t.true(console.log.firstCall.calledWithMatch(/localhost/))
+  t.regex(await server(), /http/)
+  t.true(console.log.firstCall.calledWithMatch(/http/))
   console.log.restore()
 })
 
 test('start (no logging)', async (t) => {
   log.server = false
   sinon.stub(console, 'log')
-  t.regex(await server(), /localhost/)
+  t.regex(await server(), /http/)
   t.false(console.log.called)
   console.log.restore()
 })

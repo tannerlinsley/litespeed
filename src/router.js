@@ -81,7 +81,7 @@ export function removeUrlQuery (url = '') {
 
 /**
  * Match a route in the route map.
- * @param {object} config - The airflow route object
+ * @param {object} config - The lightrail route object
  * @returns {object} The route that was found
  */
 export function lookupRoute (route) {
@@ -96,7 +96,7 @@ export function lookupRoute (route) {
 
 /**
  * Creates a route and adds it to the route map.
- * @param {object} config - An airflow route config
+ * @param {object} config - An lightrail route config
  */
 export function createRoute (route) {
   /* route is a dir pattern, go through files */

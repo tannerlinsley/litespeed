@@ -1,8 +1,8 @@
 const config = {
   /* set server name (displays as Server header) */
-  name: 'Airflow',
+  name: 'Lightrail',
   /* the host to run on */
-  host: 'localhost',
+  host: '0.0.0.0',
   /* the port to run on */
   port: 8000,
   /* request timeout limit (5s default) */

@@ -9,7 +9,7 @@ import server from './server'
 import Validation from './validation'
 import Errors from './errors'
 
-class Airflow {
+class Lightrail {
   constructor (opts) {
     /* set custom config options */
     updateConfig(opts)
@@ -31,6 +31,6 @@ class Airflow {
   }
 }
 
-module.exports = Airflow
+module.exports = Lightrail
 module.exports.Validator = Validation
 module.exports.Errors = Errors

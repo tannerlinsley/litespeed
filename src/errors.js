@@ -9,7 +9,7 @@ export default class Errors {
 
   /**
    * Gets an error from predefined Node status codes, and
-   * returns a formatted Airflow response.
+   * returns a formatted Lightrail response.
    * @param {number} statusCode - The status code to lookup/use
    * @param {string} message - An optional response message
    * @return {object} The response object

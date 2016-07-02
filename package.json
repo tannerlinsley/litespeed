@@ -1,13 +1,13 @@
 {
-  "name": "airflow",
-  "version": "0.0.3",
+  "name": "lightrail",
+  "version": "0.0.1",
   "description": "A serverless web framework",
   "author": "Jason Maurer",
   "license": "MIT",
-  "homepage": "https://github.com/jsonmaur/airflow",
+  "homepage": "https://github.com/jsonmaur/lightrail",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jsonmaur/airflow.git"
+    "url": "git+https://github.com/jsonmaur/lightrail.git"
   },
   "engines": {
     "node": ">=4"
@@ -34,7 +34,7 @@
   ],
   "main": "lib/index.js",
   "bin": {
-    "airflow": "bin/airflow"
+    "lightrail": "bin/lightrail"
   },
   "scripts": {
     "test:lint": "standard --verbose | snazzy",

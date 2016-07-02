@@ -3,8 +3,8 @@ import config, { updateConfig } from '../../src/config'
 
 test('config', (t) => {
   process.env.NODE_ENV = 'development'
-  t.is(config.name, 'Airflow')
-  t.is(config.host, 'localhost')
+  t.is(config.name, 'Lightrail')
+  t.is(config.host, '0.0.0.0')
   t.is(config.port, 8000)
   t.is(config.timeout, 5000)
   t.is(config.payloadLimit, 1048576)
