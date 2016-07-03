@@ -5,6 +5,7 @@ try {
 import { updateConfig } from './config'
 import { createRoute } from './router'
 import inject from './inject'
+// import docs from './docs'
 import server from './server'
 import Validation from './validation'
 import Errors from './errors'
@@ -21,6 +22,7 @@ class Lightrail {
     }
 
     this.start = async (cb) => {
+      // await docs()
       await server(cb)
       return this
     }

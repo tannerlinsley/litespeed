@@ -44,6 +44,9 @@ export function sendResponse (response, statusCode, data) {
           data = config.isDev() ? JSON.stringify(data, null, 2) : JSON.stringify(data)
           response.setHeader('Content-Type', 'application/json')
         }
+      } else if (data.match(/^<.+>/)) {
+        /* content is html */
+        response.setHeader('Content-Type', 'text/html')
       }
       /* must use byteLength since we need the actual length vs # of characters */
       response.setHeader('Content-Length', Buffer.byteLength(data))
