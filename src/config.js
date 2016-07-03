@@ -16,7 +16,7 @@ const config = {
   /* setup log tags */
   log: { server: true, request: true, error: true },
   /* the global route map */
-  routeMap: { get: {}, post: {}, put: {}, patch: {}, delete: {} },
+  routeMap: {},
   /* whether we are in dev mode */
   isDev: () => Boolean(String(process.env.NODE_ENV).match(/dev/i))
 }

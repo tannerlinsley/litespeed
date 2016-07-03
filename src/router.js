@@ -84,14 +84,16 @@ export function removeUrlQuery (url = '') {
  * @param {object} config - The lightrail route object
  * @returns {object} The route that was found
  */
-export function lookupRoute (route) {
-  const methodMap = config.routeMap[route.method.toLowerCase()]
+export function lookupRoute (route, getAll = false) {
+  const routes = config.routeMap
 
-  const key = Object.keys(methodMap).find((r) => {
+  const key = Object.keys(routes).find((r) => {
     return route.url.match(new RegExp(r))
   })
+  if (!key) return
 
-  return methodMap[key]
+  const method = route.method.toLowerCase()
+  return getAll ? routes[key] : routes[key][method]
 }
 
 /**
@@ -107,12 +109,8 @@ export function createRoute (route) {
   if (Array.isArray(route)) {
     return route.forEach(createRoute)
   }
-
   if (!route) {
     throw new TypeError('Routes must have a configuration object')
-  }
-  if (!route.method.match(/^(get|post|put|patch|delete)$/i)) {
-    throw new TypeError('Route method must be one of [ GET, POST, PUT, PATCH, DELETE ]')
   }
   if (typeof route.url !== 'string') {
     // TODO: check for a valid url
@@ -123,16 +121,38 @@ export function createRoute (route) {
   }
 
   /* get regex url and and method type */
-  const regexUrl = expandUrl(route.url)
+  const url = expandUrl(route.url)
   const method = route.method.toLowerCase()
 
-  /* make sure route isn't a duplicate */
-  if (config.routeMap[method][regexUrl]) {
-    throw new Error(`"${route.method} ${route.url}" is defined more than once`)
+  if (!config.routeMap[url]) {
+    config.routeMap[url] = {}
   }
 
-  /* add route to route map */
-  config.routeMap[method][regexUrl] = route
+  if (config.routeMap[url][method]) {
+    throw new Error(`"${route.method} ${route.url}" is already defined`)
+  }
+
+  config.routeMap[url][method] = route
+
+  // /* ensure method in the route map */
+  // if (!config.routeMap[method]) {
+  //   config.routeMap[method] = {}
+  // }
+  //
+  // /* add method to route options */
+  // if (!config.routeMap._options[regexUrl]) {
+  //   config.routeMap._options[regexUrl] = [method]
+  // } else {
+  //   config.routeMap._options[regexUrl].push(method)
+  // }
+  //
+  // /* make sure route isn't a duplicate */
+  // if (config.routeMap[method][regexUrl]) {
+  //   throw new Error(`"${route.method} ${route.url}" is defined more than once`)
+  // }
+  //
+  // /* add route to route map */
+  // config.routeMap[method][regexUrl] = route
 }
 
 /**

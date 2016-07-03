@@ -4,9 +4,11 @@ import config from '../../src/config'
 
 const customConfig = {
   routeMap: {
-    get: {
-      '^\\/$': { method: 'GET', url: '/' },
-      '^\\/hello\\/[^\\/\\?]+$': { method: 'GET', url: '/hello/:name' }
+    '^\\/$': {
+      get: { method: 'GET', url: '/' }
+    },
+    '^\\/hello\\/[^\\/\\?]+$': {
+      get: { method: 'GET', url: '/hello/:name' }
     }
   }
 }
@@ -66,7 +68,7 @@ test('lookupRoute', (t) => {
 test('createRoute', (t) => {
   const route = { method: 'GET', url: '/whatup', handler: () => {} }
   router.createRoute(route)
-  t.deepEqual(customConfig.routeMap.get['^\\/whatup$'], route)
+  t.deepEqual(customConfig.routeMap['^\\/whatup$'].get, route)
   t.throws(() => router.createRoute(route), Error, 'duplicate route')
   t.throws(() => router.createRoute(), TypeError, 'no config')
   t.throws(() => router.createRoute({ method: 'HI' }), TypeError, 'invalid method')
@@ -75,12 +77,11 @@ test('createRoute', (t) => {
 })
 
 test('createRoute (arrays)', (t) => {
-  customConfig.routeMap.get = {}
   const routes = [
-    { method: 'GET', url: '/', handler: () => {} },
-    { method: 'GET', url: '/whatup', handler: () => {} }
+    { method: 'GET', url: '/hello', handler: () => {} },
+    { method: 'GET', url: '/testing', handler: () => {} }
   ]
   router.createRoute(routes)
-  t.deepEqual(customConfig.routeMap.get['^\\/$'], routes[0])
-  t.deepEqual(customConfig.routeMap.get['^\\/whatup$'], routes[1])
+  t.deepEqual(customConfig.routeMap['^\\/hello$'].get, routes[0])
+  t.deepEqual(customConfig.routeMap['^\\/testing$'].get, routes[1])
 })

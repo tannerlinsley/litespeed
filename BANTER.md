@@ -32,3 +32,4 @@ Structure should be kept as simple as possible. One main entry file that exports
 - [ ] Gzipping Response
 - [ ] Custom cache control
 - [ ] Handle large payloads / file uploads / file descriptors
+- [ ] Automatically generate docs, show when you visit API with browser

@@ -21,7 +21,7 @@ export function sendResponse (response, statusCode, data) {
   /* send proper status code and headers */
   response.statusCode = parseInt(statusCode, 10) || 200
   response.setHeader('X-Powered-By', config.name)
-  response.setHeader('Cache-Control', 'no-cache')
+  response.setHeader('Cache-Control', 'max-age=0, private, must-revalidate')
 
   /* send correct headers and response based on data type */
   if (data) {

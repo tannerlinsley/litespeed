@@ -26,13 +26,23 @@ export async function onRequest (request, response) {
     })
 
     /* look up route from route map */
+    const getOptions = request.method.match(/^options$/i)
     route = lookupRoute({
       method: request.method,
       url: removeUrlQuery(request.url)
-    })
+    }, getOptions)
 
     /* route not found */
     if (!route) throw new Errors().notFound()
+
+    /* send route options if requested */
+    if (getOptions) {
+      const allow = Object.keys(route)
+        .map((r) => r.toUpperCase()).join(', ')
+
+      response.setHeader('Allow', allow)
+      return sendResponse(response)
+    }
 
     /* default values */
     route.validate = route.validate || {}
@@ -83,9 +93,7 @@ export async function onRequest (request, response) {
     /* security headers */
     if (config.protect) {
       response.setHeader('X-Content-Type-Options', 'nosniff')
-      response.setHeader('X-Download-Options', 'noopen')
       response.setHeader('X-Frame-Options', 'deny')
-      response.setHeader('X-XSS-Protection', '1; mode=block')
     }
 
     /* respond with result */
@@ -155,20 +163,20 @@ export async function onError (response, error, route) {
  * @returns {object} The body data
  */
 export async function getBodyData (request) {
+  /* only look for body on these methods */
+  if (!request.method.match(/^(post|put|patch)$/i)) return
+
   /* parse content type so we can process data */
   const contentType = request.headers['content-type'] || 'text/plain; charset=utf-8'
   const mediaType = typer.parse(contentType)
 
   /* get request body data */
-  let body = {}
-  if (request.method.match(/^(post|put|patch)$/i)) {
-    // TODO: stream.destroy or stream.close needed for file descriptors?
-    body = await rawBody(request, {
-      limit: config.payloadLimit,
-      length: request.headers['content-length'],
-      encoding: mediaType.parameters.charset || 'utf-8'
-    })
-  }
+  // TODO: stream.destroy or stream.close needed for file descriptors?
+  let body = await rawBody(request, {
+    limit: config.payloadLimit,
+    length: request.headers['content-length'],
+    encoding: mediaType.parameters.charset || 'utf-8'
+  })
 
   /* process body data */
   switch (mediaType.subtype) {
