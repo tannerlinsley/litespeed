@@ -1,5 +1,5 @@
 import test from 'ava'
-import Errors, { cleanStackTrace } from '../../src/errors'
+import Errors, { cleanStackTrace } from './errors'
 
 test('constructor', (t) => {
   t.deepEqual(new Errors(404), { statusCode: 404, error: 'Not Found' })

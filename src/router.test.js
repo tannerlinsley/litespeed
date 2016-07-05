@@ -1,6 +1,6 @@
 import test from 'ava'
 import proxyquire from 'proxyquire'
-import config from '../../src/config'
+import config from './config'
 
 const customConfig = {
   routeMap: {
@@ -13,7 +13,7 @@ const customConfig = {
   }
 }
 
-const router = proxyquire('../../src/router', {
+const router = proxyquire('./router', {
   './config': Object.assign(config, customConfig)
 })
 

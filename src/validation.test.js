@@ -1,5 +1,5 @@
 import test from 'ava'
-import Validation from '../../src/validation'
+import Validation from './validation'
 
 test('constructor', (t) => {
   const validation = new Validation()

@@ -1,7 +1,7 @@
 import test from 'ava'
 import proxyquire from 'proxyquire'
-import Validator from '../../src/validation'
-import * as request from '../../src/request'
+import Validator from './validation'
+import * as request from './request'
 
 /* functions */
 test.todo('onRequest')
@@ -57,7 +57,7 @@ test('stripUnknownData', (t) => {
 })
 
 test('stripUnknownData (no strip)', (t) => {
-  const { stripUnknownData } = proxyquire('../../src/request', {
+  const { stripUnknownData } = proxyquire('./request', {
     './config': { stripUnknown: false, '@noCallThru': true }
   })
   const data = { one: 1, two: 2, three: 3 }

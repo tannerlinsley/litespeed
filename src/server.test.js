@@ -1,10 +1,10 @@
 import test from 'ava'
 import sinon from 'sinon'
 import proxyquire from 'proxyquire'
-import config from '../../src/config'
+import config from './config'
 
 const log = { server: true }
-const server = proxyquire('../../src/server', {
+const server = proxyquire('./server', {
   'http': {
     createServer: () => ({ listen: (_, __, cb) => cb() })
   },

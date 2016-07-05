@@ -1,5 +1,5 @@
 import test from 'ava'
-import * as utils from '../../src/utils'
+import * as utils from './utils'
 
 test('getIpAddress', (t) => {
   const request1 = { headers: {}, connection: { remoteAddress: '0.0.0.0' } }

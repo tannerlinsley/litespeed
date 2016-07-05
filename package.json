@@ -38,8 +38,8 @@
   },
   "scripts": {
     "test:lint": "standard --verbose | snazzy",
-    "test:unit": "rm -rf coverage .nyc_output && nyc ava test/unit -a",
-    "test:integration": "ava test/integration -s",
+    "test:integration": "ava test/**/*.js -s",
+    "test:unit": "rm -rf coverage .nyc_output && nyc ava src/**/*.test.js -a",
     "test": "zoo NODE_ENV=testing run-s test:*",
     "posttest": "nyc report -r=lcov",
     "coveralls": "cat coverage/lcov.info | coveralls",

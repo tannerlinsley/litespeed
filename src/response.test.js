@@ -1,7 +1,7 @@
 import test from 'ava'
 import stream from 'stream'
 import sinon from 'sinon'
-import { sendResponse } from '../../src/response'
+import { sendResponse } from './response'
 
 test('plain text', (t) => {
   const data = 'hi'

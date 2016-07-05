@@ -124,35 +124,18 @@ export function createRoute (route) {
   const url = expandUrl(route.url)
   const method = route.method.toLowerCase()
 
+  /* ensure route in the map */
   if (!config.routeMap[url]) {
     config.routeMap[url] = {}
   }
 
+  /* make sure route isn't a duplicate */
   if (config.routeMap[url][method]) {
     throw new Error(`"${route.method} ${route.url}" is already defined`)
   }
 
+  /* add route method to route map */
   config.routeMap[url][method] = route
-
-  // /* ensure method in the route map */
-  // if (!config.routeMap[method]) {
-  //   config.routeMap[method] = {}
-  // }
-  //
-  // /* add method to route options */
-  // if (!config.routeMap._options[regexUrl]) {
-  //   config.routeMap._options[regexUrl] = [method]
-  // } else {
-  //   config.routeMap._options[regexUrl].push(method)
-  // }
-  //
-  // /* make sure route isn't a duplicate */
-  // if (config.routeMap[method][regexUrl]) {
-  //   throw new Error(`"${route.method} ${route.url}" is defined more than once`)
-  // }
-  //
-  // /* add route to route map */
-  // config.routeMap[method][regexUrl] = route
 }
 
 /**

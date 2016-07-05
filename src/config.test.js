@@ -1,5 +1,5 @@
 import test from 'ava'
-import config, { updateConfig } from '../../src/config'
+import config, { updateConfig } from './config'
 
 test('config', (t) => {
   process.env.NODE_ENV = 'development'
