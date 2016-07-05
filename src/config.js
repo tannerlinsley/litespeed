@@ -13,6 +13,8 @@ const config = {
   stripUnknown: true,
   /* whether to add basic security headers */
   protect: true,
+  /* whether the api is running behind a proxy (for ip address capture) */
+  behindProxy: false,
   /* setup log tags */
   log: { server: true, request: true, error: true },
   /* url for the docs */

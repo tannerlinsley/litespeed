@@ -1,3 +1,5 @@
+import config from './config'
+
 /**
  * Gets an IP address from a Hapi request, taking into account
  * multiple forwarded addresses (such as from a proxy server).
@@ -7,11 +9,15 @@
 export function getIpAddress (request) {
   const remote = request.connection.remoteAddress || request.socket.remoteAddress
 
-  const forwarded = request.headers['x-forwarded-for']
-  if (!forwarded) return remote
+  if (config.behindProxy) {
+    const forwarded = request.headers['x-forwarded-for']
+    if (!forwarded) return remote
 
-  /* return first in the list if there are many */
-  return String(forwarded).split(',')[0].trim()
+    /* return first in the list if there are many */
+    return String(forwarded).split(',')[0].trim()
+  }
+
+  return remote
 }
 
 /**
