@@ -1,7 +1,7 @@
 import http from 'http'
 import config from './config'
 import { onRequest } from './request'
-import { logTurnedOn } from './log'
+import { logTurnedOn } from './utils'
 
 /**
  * Creates http server, setup request handler, and begin listening.
@@ -16,6 +16,7 @@ export default function (cb = () => {}) {
   /* returns a promise resolving with the server url */
   return new Promise((resolve, reject) => {
     server.listen(config.port, config.host, () => {
+      console.log(logTurnedOn('server'))
       if (logTurnedOn('server')) {
         console.log(`=> Running at ${url}`)
       }

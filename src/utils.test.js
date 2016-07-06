@@ -26,7 +26,6 @@ test('escapeRegex', (t) => {
 
 test('typeOf', (t) => {
   t.is(utils.typeOf('hello'), 'string')
-  t.is(utils.typeOf(new String('hello')), 'string')
   t.is(utils.typeOf([1, 2, 3]), 'array')
   t.is(utils.typeOf({ one: 1, two: 2 }), 'object')
   t.is(utils.typeOf('{ "one": 1, "two": 2 }'), 'string')

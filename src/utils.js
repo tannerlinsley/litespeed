@@ -38,3 +38,13 @@ export function typeOf (val) {
   const str = Object.prototype.toString.call(val)
   return str.substring(str.indexOf(' ') + 1, str.length - 1).toLowerCase()
 }
+
+/**
+ * Tells whether a particular log tag is enabled.
+ * @param {string} tag - The log tag to check
+ * @returns {boolean} Whether tag is enabled
+ */
+export function logTurnedOn (tag) {
+  if (config.logs === false) return false
+  return config.logs.indexOf(tag) > -1
+}

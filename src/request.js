@@ -4,7 +4,7 @@ import rawBody from 'raw-body'
 import config from './config'
 import { sendResponse } from './response'
 import { lookupRoute, removeUrlQuery, getParamData, getQueryData } from './router'
-import { getIpAddress } from './utils'
+import { getIpAddress, logTurnedOn } from './utils'
 import Errors, { cleanStackTrace } from './errors'
 
 /**

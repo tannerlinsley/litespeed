@@ -30,7 +30,7 @@ test('updateConfig', (t) => {
   t.is(config.port, 7000)
   t.false(config.stripUnknown)
   t.false(config.protect)
-  t.is(config.logs.indexOf('server'), -1)
+  t.false(config.logs)
   t.false(config._isDev())
 })
 
@@ -38,12 +38,4 @@ test('updateConfig', (t) => {
   process.env.NODE_ENV = 'production'
   updateConfig()
   t.is(config.name, 'Hi')
-})
-
-test('updateConfig', (t) => {
-  process.env.NODE_ENV = 'production'
-  updateConfig({
-    logs: ['server', 'error']
-  })
-  t.is(config.logs.indexOf('request'), -1)
 })

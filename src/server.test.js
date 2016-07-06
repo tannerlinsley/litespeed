@@ -1,27 +1,3 @@
 import test from 'ava'
-import sinon from 'sinon'
-import proxyquire from 'proxyquire'
-import config from './config'
 
-const log = { server: true }
-const server = proxyquire('./server', {
-  'http': {
-    createServer: () => ({ listen: (_, __, cb) => cb() })
-  },
-  './config': Object.assign(config, { log })
-}).default
-
-test('start', async (t) => {
-  sinon.stub(console, 'log')
-  t.regex(await server(), /http/)
-  t.true(console.log.firstCall.calledWithMatch(/http/))
-  console.log.restore()
-})
-
-test('start (no logging)', async (t) => {
-  log.server = false
-  sinon.stub(console, 'log')
-  t.regex(await server(), /http/)
-  t.false(console.log.called)
-  console.log.restore()
-})
+test.todo('')
