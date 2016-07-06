@@ -54,6 +54,7 @@ export async function onRequest (request, response) {
       query: stripUnknownData(getQueryData(request), route.validate.query),
       params: getParamData(request.url, route.url),
       headers: request.headers,
+      context: {},
       info: {
         remoteAddress: getIpAddress(request)
       }
@@ -61,6 +62,7 @@ export async function onRequest (request, response) {
 
     /* functions exposed to handler response arg */
     const responseData = {
+      pass: (name, value) => (requestData.context[name] = value),
       setHeader: (name, value) => response.setHeader(name, value),
       redirect: (url) => (response._redirectTo = url)
     }
@@ -80,7 +82,7 @@ export async function onRequest (request, response) {
       if (typeof func !== 'function') {
         throw new TypeError('Pre-handler must be an array of functions')
       }
-      return func(requestData, responseData)
+      return func({ ...requestData }, { ...responseData })
     }))
 
     /* run handler */
