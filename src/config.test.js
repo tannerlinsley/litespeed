@@ -10,9 +10,9 @@ test('config', (t) => {
   t.is(config.payloadLimit, 1048576)
   t.true(config.stripUnknown)
   t.true(config.protect)
-  t.is(typeof config.log, 'object')
-  t.is(typeof config.routeMap, 'object')
-  t.true(config.isDev())
+  t.is(typeof config.logs, 'object')
+  t.is(typeof config._routeMap, 'object')
+  t.true(config._isDev())
 })
 
 test('updateConfig', (t) => {
@@ -23,15 +23,15 @@ test('updateConfig', (t) => {
     port: 7000,
     stripUnknown: false,
     protect: false,
-    log: false
+    logs: false
   })
   t.is(config.name, 'Hi')
   t.is(config.host, '0.0.0.0')
   t.is(config.port, 7000)
   t.false(config.stripUnknown)
   t.false(config.protect)
-  t.false(config.log.server)
-  t.false(config.isDev())
+  t.is(config.logs.indexOf('server'), -1)
+  t.false(config._isDev())
 })
 
 test('updateConfig', (t) => {
@@ -43,7 +43,7 @@ test('updateConfig', (t) => {
 test('updateConfig', (t) => {
   process.env.NODE_ENV = 'production'
   updateConfig({
-    log: { request: false }
+    logs: ['server', 'error']
   })
-  t.false(config.log.request)
+  t.is(config.logs.indexOf('request'), -1)
 })

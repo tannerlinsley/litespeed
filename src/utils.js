@@ -28,3 +28,13 @@ export function getIpAddress (request) {
 export function escapeRegex (str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
 }
+
+/**
+ * A better typeof to determine the type of a variable.
+ * @param {any} val - The value to look at
+ * @return {string} The value type
+ */
+export function typeOf (val) {
+  const str = Object.prototype.toString.call(val)
+  return str.substring(str.indexOf(' ') + 1, str.length - 1).toLowerCase()
+}

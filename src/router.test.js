@@ -3,7 +3,7 @@ import proxyquire from 'proxyquire'
 import config from './config'
 
 const customConfig = {
-  routeMap: {
+  _routeMap: {
     '^\\/$': {
       get: { method: 'GET', url: '/' }
     },
@@ -68,7 +68,7 @@ test('lookupRoute', (t) => {
 test('createRoute', (t) => {
   const route = { method: 'GET', url: '/whatup', handler: () => {} }
   router.createRoute(route)
-  t.deepEqual(customConfig.routeMap['^\\/whatup$'].get, route)
+  t.deepEqual(customConfig._routeMap['^\\/whatup$'].get, route)
   t.throws(() => router.createRoute(route), Error, 'duplicate route')
   t.throws(() => router.createRoute(), TypeError, 'no config')
   t.throws(() => router.createRoute({ method: 'HI' }), TypeError, 'invalid method')
@@ -82,6 +82,6 @@ test('createRoute (arrays)', (t) => {
     { method: 'GET', url: '/testing', handler: () => {} }
   ]
   router.createRoute(routes)
-  t.deepEqual(customConfig.routeMap['^\\/hello$'].get, routes[0])
-  t.deepEqual(customConfig.routeMap['^\\/testing$'].get, routes[1])
+  t.deepEqual(customConfig._routeMap['^\\/hello$'].get, routes[0])
+  t.deepEqual(customConfig._routeMap['^\\/testing$'].get, routes[1])
 })

@@ -69,7 +69,7 @@ export async function onRequest (request, response) {
     await runValidations(route, requestData)
 
     /* log request info */
-    if (config.log.request) {
+    if (logTurnedOn('request')) {
       const { remoteAddress } = requestData.info
       console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
     }
@@ -130,7 +130,7 @@ export async function onError (response, error, route) {
 
     /* display and log server errors correctly */
     if (statusCode >= 500) {
-      if (config.log.error) {
+      if (logTurnedOn('error')) {
         let toLog = error
 
         /* turn into an error if needed */
@@ -143,7 +143,7 @@ export async function onError (response, error, route) {
       }
 
       /* remove server errors unless in dev mode */
-      if (statusCode >= 500 && !config.isDev() && errorResponse.message) {
+      if (statusCode >= 500 && !config._isDev() && errorResponse.message) {
         delete errorResponse.message
       }
     }

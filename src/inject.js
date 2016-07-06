@@ -10,7 +10,7 @@ import { onRequest } from './request'
  * @returns {object} The result of the request
  */
 export default async function (route) {
-  config.log.request = false
+  config.logs = false
 
   const request = new HijackedStream(route)
   const response = new http.ServerResponse(request)

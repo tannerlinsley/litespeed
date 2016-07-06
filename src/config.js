@@ -1,28 +1,41 @@
+import { typeOf } from './utils'
+
 const config = {
-  /* set server name (displays as Server header) */
+  /* the global route map */
+  _routeMap: {},
+  /* whether we are in dev mode */
+  _isDev: () => Boolean(String(process.env.NODE_ENV).match(/dev/i)),
+
+  /* set name (displays as X-Powered-By header) */
   name: 'Lightrail',
+  name__type: 'string',
   /* the host to run on */
   host: '0.0.0.0',
+  host__type: 'string',
   /* the port to run on */
   port: 8000,
+  port__type: 'number',
   /* request timeout limit (5s default) */
   timeout: 5000,
+  timeout__type: 'number',
   /* limit for payload size in bytes (1mb default) */
   payloadLimit: 1048576,
+  payloadLimit__type: 'number',
   /* strip unknown values from payloads/queries */
   stripUnknown: true,
+  stripUnknown__type: 'boolean',
   /* whether to add basic security headers */
   protect: true,
+  protect__type: 'boolean',
   /* whether the api is running behind a proxy (for ip address capture) */
   behindProxy: false,
-  /* setup log tags */
-  log: { server: true, request: true, error: true },
+  behindProxy__type: 'boolean',
   /* url for the docs */
   documentationUrl: '/docs',
-  /* the global route map */
-  routeMap: {},
-  /* whether we are in dev mode */
-  isDev: () => Boolean(String(process.env.NODE_ENV).match(/dev/i))
+  documentationUrl__type: 'string',
+  /* setup log tags */
+  logs: ['server', 'request', 'error'],
+  logs__type: ['array', 'boolean']
 }
 
 /**
@@ -30,24 +43,28 @@ const config = {
  * @param {object} opts - Config options
  */
 export function updateConfig (opts = {}) {
-  config.name = opts.name || config.name
-  config.host = opts.host || config.host
-  config.port = parseInt(opts.port, 10) || config.port
-  config.timeout = parseInt(opts.timeout, 10) || config.timeout
-  config.payloadLimit = parseInt(opts.payloadLimit, 10) || config.payloadLimit
-  config.documentationUrl = opts.documentationUrl || config.documentationUrl
-  /* values that can be boolean (can't use the || operator) */
-  if (opts.stripUnknown !== undefined) {
-    config.stripUnknown = opts.stripUnknown
-  }
-  if (opts.protect !== undefined) {
-    config.protect = opts.protect
-  }
-  if (opts.log !== undefined) {
-    config.log = opts.log !== false
-      ? Object.assign({}, config.log, opts.log)
-      : { server: false, request: false, error: false }
-  }
+  Object.keys(opts).forEach((opt) => {
+    if (opts[opt] === undefined) return
+
+    /* make sure option is valid */
+    if (opt.match(/^_/)) {
+      throw new Error(`"${opt}" is a read-only value`)
+    }
+    if (!config[opt]) {
+      throw new Error(`"${opt}" isn't a valid config key`)
+    }
+
+    /* get allowed types for the config value */
+    const type = Array.isArray(config[`${opt}__type`])
+      ? config[`${opt}__type`] : [config[`${opt}__type`]]
+    /* make sure type is valid */
+    if (type.indexOf(typeOf(opts[opt])) === -1) {
+      throw new TypeError(`"${opt}" must be of type ${type.join(', ')}`)
+    }
+
+    /* set value in config */
+    config[opt] = opts[opt]
+  })
 }
 
 export default config

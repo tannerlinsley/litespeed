@@ -3,7 +3,7 @@ import config from './config'
 import { createRoute } from './router'
 
 export default async function () {
-  const endpoints = config.routeMap
+  const endpoints = config._routeMap
 
   fs.ensureDirSync('.lightrail')
   fs.outputJsonSync('.lightrail/endpoints.json', endpoints)

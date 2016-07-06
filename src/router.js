@@ -85,7 +85,7 @@ export function removeUrlQuery (url = '') {
  * @returns {object} The route that was found
  */
 export function lookupRoute (route, getAll = false) {
-  const routes = config.routeMap
+  const routes = config._routeMap
 
   const key = Object.keys(routes).find((r) => {
     return route.url.match(new RegExp(r))
@@ -125,17 +125,17 @@ export function createRoute (route) {
   const method = route.method.toLowerCase()
 
   /* ensure route in the map */
-  if (!config.routeMap[url]) {
-    config.routeMap[url] = {}
+  if (!config._routeMap[url]) {
+    config._routeMap[url] = {}
   }
 
   /* make sure route isn't a duplicate */
-  if (config.routeMap[url][method]) {
+  if (config._routeMap[url][method]) {
     throw new Error(`"${route.method} ${route.url}" is already defined`)
   }
 
   /* add route method to route map */
-  config.routeMap[url][method] = route
+  config._routeMap[url][method] = route
 }
 
 /**

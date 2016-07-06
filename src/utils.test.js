@@ -23,3 +23,16 @@ test('escapeRegex', (t) => {
   t.is(utils.escapeRegex('^.*hello$'), '\\^\\.\\*hello\\$')
   t.is(utils.escapeRegex('test'), 'test')
 })
+
+test('typeOf', (t) => {
+  t.is(utils.typeOf('hello'), 'string')
+  t.is(utils.typeOf(new String('hello')), 'string')
+  t.is(utils.typeOf([1, 2, 3]), 'array')
+  t.is(utils.typeOf({ one: 1, two: 2 }), 'object')
+  t.is(utils.typeOf('{ "one": 1, "two": 2 }'), 'string')
+  t.is(utils.typeOf(Object.create({})), 'object')
+  t.is(utils.typeOf(100), 'number')
+  t.is(utils.typeOf(1.111), 'number')
+  t.is(utils.typeOf(true), 'boolean')
+  t.is(utils.typeOf(), 'undefined')
+})

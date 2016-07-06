@@ -41,7 +41,7 @@ export function sendResponse (response, statusCode, data) {
           data = ''
         } else {
           /* only prettify in dev mode to take advantages of V8 optimizations */
-          data = config.isDev() ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+          data = config._isDev() ? JSON.stringify(data, null, 2) : JSON.stringify(data)
           response.setHeader('Content-Type', 'application/json')
         }
       } else if (data.match(/^<.+>/)) {
