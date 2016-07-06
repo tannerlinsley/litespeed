@@ -77,11 +77,13 @@ export async function onRequest (request, response) {
     }
 
     /* run prehandlers */
-    const preHandlers = config.pre.concat(route.pre || [])
+    const preHandlers = config.preHandler.concat(route.preHandler || [])
+    // TODO: run as waterfall so they can pass values down the chain
     await Promise.all(preHandlers.map((func) => {
       if (typeof func !== 'function') {
-        throw new TypeError('Pre-handler must be an array of functions')
+        throw new TypeError('preHandler must be an array of functions')
       }
+      /* pass copies of the request/response for immutability */
       return func({ ...requestData }, { ...responseData })
     }))
 
@@ -102,7 +104,7 @@ export async function onRequest (request, response) {
     }
 
     /* security headers */
-    if (config.protect) {
+    if (config.protective) {
       response.setHeader('X-Content-Type-Options', 'nosniff')
       response.setHeader('X-Frame-Options', 'deny')
     }

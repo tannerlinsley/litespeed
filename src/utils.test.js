@@ -11,7 +11,7 @@ test('getIpAddress', (t) => {
 
 test('getIpAddress', (t) => {
   const { getIpAddress } = proxyquire('./utils', {
-    './config': { behindProxy: true, '@noCallThru': true }
+    './config': { realIp: true, '@noCallThru': true }
   })
   const request1 = { headers: { 'x-forwarded-for': '0.0.0.0' }, connection: {}, socket: {} }
   const request2 = { headers: { 'x-forwarded-for': '0.0.0.0, 1.1.1.1, 2.2.2.2' }, connection: {}, socket: {} }

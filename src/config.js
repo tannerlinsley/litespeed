@@ -25,11 +25,11 @@ const config = {
   stripUnknown: true,
   stripUnknown__type: 'boolean',
   /* whether to add basic security headers */
-  protect: true,
-  protect__type: 'boolean',
-  /* whether the api is running behind a proxy (for ip address capture) */
-  behindProxy: false,
-  behindProxy__type: 'boolean',
+  protective: true,
+  protective__type: 'boolean',
+  /* whether to check the x-forwarded-for header for user's IP address */
+  realIp: true,
+  realIp__type: 'boolean',
   /* url for the docs */
   documentationUrl: '/docs',
   documentationUrl__type: 'string',
@@ -37,8 +37,8 @@ const config = {
   logs: ['server', 'request', 'error'],
   logs__type: ['array', 'boolean'],
   /* prehandler functions */
-  pre: [],
-  pre__type: 'array'
+  preHandler: [],
+  preHandler__type: 'array'
 }
 
 /**

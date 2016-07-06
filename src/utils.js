@@ -8,16 +8,13 @@ import config from './config'
  */
 export function getIpAddress (request) {
   const remote = request.connection.remoteAddress || request.socket.remoteAddress
+  if (!config.realIp) return remote
 
-  if (config.behindProxy) {
-    const forwarded = request.headers['x-forwarded-for']
-    if (!forwarded) return remote
+  const forwarded = request.headers['x-forwarded-for']
+  if (!forwarded) return remote
 
-    /* return first in the list if there are many */
-    return String(forwarded).split(',')[0].trim()
-  }
-
-  return remote
+  /* return first in the list if there are many */
+  return String(forwarded).split(',')[0].trim()
 }
 
 /**
