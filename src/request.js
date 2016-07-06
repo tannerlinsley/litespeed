@@ -74,6 +74,15 @@ export async function onRequest (request, response) {
       console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
     }
 
+    /* run prehandlers */
+    const preHandlers = config.pre.concat(route.pre || [])
+    await Promise.all(preHandlers.map((func) => {
+      if (typeof func !== 'function') {
+        throw new TypeError('Pre-handler must be an array of functions')
+      }
+      return func(requestData, responseData)
+    }))
+
     /* run handler */
     const handlerResult = route.handler(requestData, responseData)
     /* resolve the promise if one is returned */

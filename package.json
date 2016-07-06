@@ -44,7 +44,7 @@
     "posttest": "nyc report -r=lcov",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "prebuild": "rm -rf lib",
-    "build": "babel src -d lib --no-comments",
+    "build": "babel src -d lib --ignore *.test.js --no-comments",
     "watch": "npm run build -- -w -s",
     "prepublish": "npm test && npm run build"
   },

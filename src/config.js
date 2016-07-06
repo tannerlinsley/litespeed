@@ -35,7 +35,10 @@ const config = {
   documentationUrl__type: 'string',
   /* setup log tags */
   logs: ['server', 'request', 'error'],
-  logs__type: ['array', 'boolean']
+  logs__type: ['array', 'boolean'],
+  /* prehandler functions */
+  pre: [],
+  pre__type: 'array'
 }
 
 /**
