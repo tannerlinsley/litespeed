@@ -35,3 +35,15 @@ test('typeOf', (t) => {
   t.is(utils.typeOf(true), 'boolean')
   t.is(utils.typeOf(), 'undefined')
 })
+
+test('promiseWaterfall', async (t) => {
+  const res = []
+  const run = (id = 0) => new Promise((resolve) => {
+    setTimeout(() => (res.push(id) && resolve(++id)), Math.random() * 100)
+  })
+  const chain = Array.from({ length: 4 }, () => run)
+  t.is(await utils.promiseWaterfall(chain), 4)
+  t.deepEqual(res, [0, 1, 2, 3])
+  t.falsy(await utils.promiseWaterfall())
+  await t.throws(() => utils.promiseWaterfall('hi'), TypeError)
+})

@@ -4,7 +4,7 @@ import rawBody from 'raw-body'
 import config from './config'
 import { sendResponse } from './response'
 import { lookupRoute, removeUrlQuery, getParamData, getQueryData } from './router'
-import { getIpAddress, logTurnedOn } from './utils'
+import { getIpAddress, logTurnedOn, promiseWaterfall } from './utils'
 import Errors, { cleanStackTrace } from './errors'
 
 /**
@@ -78,13 +78,13 @@ export async function onRequest (request, response) {
 
     /* run prehandlers */
     const preHandlers = config.preHandler.concat(route.preHandler || [])
-    // TODO: run as waterfall so they can pass values down the chain
-    await Promise.all(preHandlers.map((func) => {
+    await promiseWaterfall(preHandlers.map((func) => {
       if (typeof func !== 'function') {
         throw new TypeError('preHandler must be an array of functions')
       }
       /* pass copies of the request/response for immutability */
-      return func({ ...requestData }, { ...responseData })
+      /* bind the function instead of call it--promiseWaterfall will call it */
+      return func.bind(func, { ...requestData }, { ...responseData })
     }))
 
     /* run handler */

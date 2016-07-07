@@ -62,7 +62,7 @@ export function updateConfig (opts = {}) {
       ? config[`${opt}__type`] : [config[`${opt}__type`]]
     /* make sure type is valid */
     if (type.indexOf(typeOf(opts[opt])) === -1) {
-      throw new TypeError(`"${opt}" must be of type ${type.join(', ')}`)
+      throw new TypeError(`"${opt}" must be of type "${type.join(', ')}"`)
     }
 
     /* set value in config */

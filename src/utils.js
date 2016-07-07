@@ -45,3 +45,17 @@ export function logTurnedOn (tag) {
   if (config.logs === false) return false
   return config.logs.indexOf(tag) > -1
 }
+
+/**
+ * Runs an array of Promises in order rather than simultaneously.
+ * @param {array} chain - The chain of promises
+ */
+export function promiseWaterfall (chain = []) {
+  if (!Array.isArray(chain)) {
+    throw new TypeError('Promise chain must be an array')
+  }
+
+  return chain.reduce((prev, next) => {
+    return prev.then(next)
+  }, Promise.resolve())
+}
