@@ -20,8 +20,14 @@ export function sendResponse (response, statusCode, data) {
 
   /* send proper status code and headers */
   response.statusCode = parseInt(statusCode, 10) || 200
-  response.setHeader('X-Powered-By', config.name)
+  if (config.name !== false) response.setHeader('Server', config.name)
   response.setHeader('Cache-Control', 'max-age=0, private, must-revalidate')
+
+  /* security headers */
+  if (config.protective) {
+    response.setHeader('X-Content-Type-Options', 'nosniff')
+    response.setHeader('X-Frame-Options', 'deny')
+  }
 
   /* send correct headers and response based on data type */
   if (data) {
@@ -41,7 +47,7 @@ export function sendResponse (response, statusCode, data) {
           data = ''
         } else {
           /* only prettify in dev mode to take advantages of V8 optimizations */
-          data = config._isDev() ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+          data = config._isDev() || config.pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)
           response.setHeader('Content-Type', 'application/json')
         }
       } else if (data.match(/^<.+>/)) {

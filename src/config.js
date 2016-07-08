@@ -8,13 +8,16 @@ const config = {
 
   /* set name (displays as X-Powered-By header) */
   name: 'Lightrail',
-  name__type: 'string',
+  name__type: ['string', 'boolean'],
   /* the host to run on */
-  host: '0.0.0.0',
+  host: process.env.HOST || '0.0.0.0',
   host__type: 'string',
   /* the port to run on */
-  port: 8000,
+  port: process.env.PORT || 8000,
   port__type: 'number',
+  /* whether to prettify output JSON */
+  pretty: false,
+  pretty__type: 'boolean',
   /* request timeout limit (5s default) */
   timeout: 5000,
   timeout__type: 'number',
@@ -37,8 +40,8 @@ const config = {
   logs: ['server', 'request', 'error'],
   logs__type: ['array', 'boolean'],
   /* prehandler functions */
-  preHandler: [],
-  preHandler__type: 'array'
+  preHandlers: [],
+  preHandlers__type: 'array'
 }
 
 /**

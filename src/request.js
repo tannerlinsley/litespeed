@@ -77,10 +77,10 @@ export async function onRequest (request, response) {
     }
 
     /* run prehandlers */
-    const preHandlers = config.preHandler.concat(route.preHandler || [])
+    const preHandlers = config.preHandlers.concat(route.preHandlers || [])
     await promiseWaterfall(preHandlers.map((func) => {
       if (typeof func !== 'function') {
-        throw new TypeError('preHandler must be an array of functions')
+        throw new TypeError('preHandlers must be an array of functions')
       }
       /* pass copies of the request/response for immutability */
       /* bind the function instead of call it--promiseWaterfall will call it */
@@ -101,12 +101,6 @@ export async function onRequest (request, response) {
     /* result is an error, send it to the catch */
     if (statusCode >= 400 || result instanceof Error) {
       throw result
-    }
-
-    /* security headers */
-    if (config.protective) {
-      response.setHeader('X-Content-Type-Options', 'nosniff')
-      response.setHeader('X-Frame-Options', 'deny')
     }
 
     /* respond with result */

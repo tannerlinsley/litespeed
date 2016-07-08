@@ -3,7 +3,7 @@ try {
 } catch (err) { /* no source map support */ }
 
 import { updateConfig } from './config'
-import { createRoute } from './router'
+import { createRoute, getAllRoutes } from './router'
 import inject from './inject'
 // import docs from './docs'
 import server from './server'
@@ -15,9 +15,17 @@ class Lightrail {
     /* set custom config options */
     updateConfig(opts)
 
-    /* define front-facing API methods */
-    this.routes = (route) => {
+    /**
+     * define front-facing API methods
+     */
+
+    this.route = (route) => {
       createRoute(route)
+      return this
+    }
+
+    this.routes = (route) => {
+      getAllRoutes(route)
       return this
     }
 
