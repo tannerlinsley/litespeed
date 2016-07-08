@@ -2,15 +2,18 @@ import path from 'path'
 import glob from 'glob'
 import qs from 'querystring'
 import config from './config'
-import { escapeRegex } from './utils'
+import { escapeRegex, stringifyRegex, typeOf } from './utils'
 
 /**
  * Converts a segment URL to a regex.
- * @param {string} url - The url to convert
+ * @param {string/regex} url - The url to convert
  * @returns {string} The splat url
  */
-export function expandUrl (url, esc = true) {
-  if (typeof url !== 'string') {
+export function expandUrl (url) {
+  const urlType = typeOf(url)
+  if (urlType === 'regexp') return url
+
+  if (urlType !== 'string') {
     throw new TypeError('URL must be a string')
   }
 
@@ -18,9 +21,9 @@ export function expandUrl (url, esc = true) {
   const split = url.split('/')
 
   /* go through each segment, and convert to regex */
-  return '^' + split.map((seg, idx) => {
+  return new RegExp('^' + split.map((seg, idx) => {
     /* escape regex characters if needed */
-    let val = esc ? escapeRegex(seg) : seg
+    let val = escapeRegex(seg)
 
     /* match segments */
     if (seg.match(/^:/)) val = '[^\\/\\?]+'
@@ -28,7 +31,7 @@ export function expandUrl (url, esc = true) {
     if (idx === (split.length - 1)) val += '$'
 
     return val
-  }).join('\\/')
+  }).join('\\/'))
 }
 
 /**
@@ -38,17 +41,25 @@ export function expandUrl (url, esc = true) {
  * @returns {object} The segment data
  */
 export function getParamData (url, fromUrl) {
-  if (typeof url !== 'string' || typeof fromUrl !== 'string') {
+  if (typeof url !== 'string') {
     throw new TypeError('URL must be a string')
   }
 
   const urlSplit = removeUrlQuery(url).split('/')
   const data = {}
 
-  fromUrl.split('/').forEach((seg, indx) => {
+  stringifyRegex(fromUrl).split('/').forEach((seg, indx) => {
     const match = seg.match(/^:(.*)/)
     if (match) data[match[1]] = urlSplit[indx]
   })
+
+  /* if url is a regex, extract matched data */
+  if (typeOf(fromUrl) === 'regexp') {
+    url.match(fromUrl).slice(1).forEach((val, indx) => {
+      /* add to data as '$1', '$2', etc. */
+      data[`$${indx + 1}`] = val
+    })
+  }
 
   return data
 }
@@ -88,7 +99,8 @@ export function lookupRoute (route, getAll = false) {
   const routes = config._routeMap
 
   const key = Object.keys(routes).find((r) => {
-    return route.url.match(new RegExp(r))
+    const regex = new RegExp(stringifyRegex(r))
+    return route.url.match(regex)
   })
   if (!key) return
 
@@ -108,11 +120,11 @@ export function createRoute (route) {
   if (!route) {
     throw new TypeError('Routes must have a configuration object')
   }
-  if (typeof route.url !== 'string') {
+  if (!typeOf(route.url).match(/(string|regexp)/)) {
     // TODO: check for a valid url
-    throw new TypeError('Route URL must be a string')
+    throw new TypeError('Route URL must be a string or regex')
   }
-  if (typeof route.handler !== 'function') {
+  if (typeOf(route.handler) !== 'function') {
     throw new TypeError('Route handler must be a function!')
   }
 

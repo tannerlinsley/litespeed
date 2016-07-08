@@ -37,6 +37,7 @@ export async function onRequest (request, response) {
 
     /* send route options if requested */
     if (getOptions) {
+      /* route has all routes for that match if OPTIONS (see above) */
       const allow = Object.keys(route)
         .map((r) => r.toUpperCase()).join(', ')
 

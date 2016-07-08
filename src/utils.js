@@ -27,6 +27,16 @@ export function escapeRegex (str) {
 }
 
 /**
+ * Turns a regular expression object into a string without wrapping slashes.
+ * @param {object} regex - The regular expression
+ * @returns {string} The regex string
+ */
+export function stringifyRegex (regex) {
+  const str = String(regex)
+  return str.substring(1, str.length - 1)
+}
+
+/**
  * A better typeof to determine the type of a variable.
  * @param {any} val - The value to look at
  * @return {string} The value type

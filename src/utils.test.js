@@ -24,6 +24,8 @@ test('escapeRegex', (t) => {
   t.is(utils.escapeRegex('test'), 'test')
 })
 
+test.todo('stringifyRegex')
+
 test('typeOf', (t) => {
   t.is(utils.typeOf('hello'), 'string')
   t.is(utils.typeOf([1, 2, 3]), 'array')
