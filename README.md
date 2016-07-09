@@ -18,16 +18,16 @@
 - [Validation](#validation)
 - [Errors](#errors)
 - [Logging](#logging)
-- [Server](#server)
+- [Server API](#server)
 - [Plugins](#plugins)
 - [Contributing](#contributing)
 - [License](#license)
 
-Lightrail is a micro web framework for building APIs in Node.js. Based on configuration and promises, it keeps things simple, predictable, and is a breeze to get started. It comes with built-in input validation, a routing library, an error library, support for pre-handlers (aka middleware), and more. An ideal solution for [microservices](https://en.wikipedia.org/wiki/Microservices)!
+Lightrail is a micro web framework for building APIs in Node.js. Based on configuration and promises, it keeps things fast, simple, predictable, and is a breeze to get started. It comes with built-in input validation, a routing library, an error library, support for pre-handlers (aka middleware), and more. A perfect solution for [microservices](https://en.wikipedia.org/wiki/Microservices)!
 
 #### Why another Node framework?
 
-There are a lot of great frameworks out there such as [Express](http://expressjs.com), [Restify](http://restify.com), [Koa](http://koajs.com), and [Hapi](http://hapijs.com). They have been around for awhile, and we have learned a lot about Node in the process. But they have become bloated and are overkill for most apps. Lightrail is a lightweight approach that takes ideas from other frameworks and brings them together in an easy to understand way.
+There are a lot of great frameworks out there such as [Express](http://expressjs.com), [Restify](http://restify.com), [Koa](http://koajs.com), and [Hapi](http://hapijs.com). They have been around for awhile, and each have their place in the Javascript ecosystem. But they are overkill for most apps, and difficult for beginners to learn. Lightrail is a lightweight approach that takes ideas from other frameworks and brings them together in an easy to understand way.
 
 <a name="installation"></a>
 ## Installation
@@ -48,13 +48,12 @@ new Lightrail({/* configuration */}).route({
   method: 'GET',
   url: '/hello/:name',
   handler: (req) => {
-    const { name } = req.params
-    return { message: `Hello, ${name}!` }
+    return { message: `Hello, ${req.params.name}!` }
   }
 }).start()
 ```
 
-That's it! Run this code and go to `http://localhost:8000/hello/jason`. You should see `{"message":"Hello, jason!"}`.
+That's it! Run this code and go to `http://localhost:8000/hello/jason`. You should be greeted with `{"message":"Hello, jason!"}`.
 
 <a name="configuration"></a>
 ## Configuration
@@ -62,53 +61,65 @@ That's it! Run this code and go to `http://localhost:8000/hello/jason`. You shou
 There are several config options, all of which have optimal values by default. But they can be easily changed by passing an object to the Lightrail instance (see the example above).
 
 - `name` The name of the server, set in the `Server` response header. Can be set to `false` to omit the header entirely.
+
   > Type: string, boolean  
   > Default: `Lightrail`
 
 - `host` The host to run the server on. Uses the `HOST` environment variable if it exists.
+
   > Type: string  
   > Default: `process.env.HOST || '0.0.0.0'`
 
 - `port` The port to run the server on. Uses the `PORT` environment variable if it exists.
+
   > Type: number  
   > Default: `process.env.PORT || 8000`
 
-- `pretty` Whether to prettify the response JSON. This will always be true if `process.env.NODE_ENV ^= 'dev'` (starts with `dev`).
-  > Type: boolean  
-  > Default: `false`
+- `pretty` Whether to prettify the response JSON.
 
-- `timeout` The amount of time in milliseconds to wait before a request is timed out, returning a 408 timeout error to the client.
+  > Type: boolean  
+  > Default: `false` or `true if NODE_ENV starts with "dev"`
+
+- `timeout` The amount of time in milliseconds to wait before a request is timed out, returning a 408 error to the client.
+
   > Type: number  
   > Default: `5000` (5s)
 
-- `payloadLimit` The max size (in bytes) a request payload can be. This prevents malicious use by client's sending giant payloads to your API. Will return a 413 payload too large error if exceeded.
+- `payloadLimit` The max size (in bytes) a request payload can be. This helps prevents malicious use by client's sending giant payloads to your API. Will return a 413 error if exceeded.
+
   > Type: number  
   > Default: `1048576` (1mb)
 
 - `stripUnknown` Whether to take out unknown values from the request payload and URL query data. This only takes effect if [validation](#validation) is running on the endpoint, and will throw away any value not included in the validation object.
+
   > Type: boolean  
   > Default: `true`
 
-- `protective` Whether to add basic security headers on the response and require a user-agent. Will currently add `X-Content-Type-Options: nosniff` and `X-Frame-Options: deny`, and send a `403 Forbidden` error if no `User-Agent` header is present on the request.
+- `protective` Whether to add basic security headers on the response and require a user-agent. Will currently add `X-Content-Type-Options: nosniff` and `X-Frame-Options: deny`, and send a 403 error if no `User-Agent` header is present on the request.
+
   > Type: boolean  
   > Default: `true`
 
 - `realIp` Whether to check for an IP address in the `X-Forwarded-For` header, taking the first address from the comma-separated list. This helps get the client's real IP address if the request is coming through a proxy server. Will fallback to the actual IP address if the header is not found.
+
   > Type: boolean  
   > Default: `true`
 
 <a name="logtags"></a>
 - `logs` Tag names of the loggers to enable. See [Logging](#logging) for more info on the tags available. Can also be set to `false` to disable all logging.
+
   > Type: array, boolean  
   > Default: all
 
 <a name="colors"></a>
-- `colors` Use colors when logging to command-line.
+- `colors` Whether to use CLI colors when logging.
+
   > Type: boolean  
   > Default: `true`
 
 <a name="global-prehandler"></a>
 - `preHandlers` Global functions to run for every route in the app. See [PreHandlers](#prehandlers) for more info.
+
   > Type: array  
   > Default: `[]`
 
@@ -117,41 +128,48 @@ There are several config options, all of which have optimal values by default. B
 
 A route is defined by a simple object with the following configuration.
 
-- `method` The method to use for the route. This is usually one of `GET, POST, PUT, PATCH, DELETE` if using the HTTP protocol, but can be set to anything if using a custom protocol.
-  > Type: string  
-  > Required: yes
+- `method` The method to use for the route. This is usually one of `HEAD, GET, POST, PUT, PATCH, DELETE` if using the HTTP protocol, but can be set to anything if you're using a custom protocol.
 
-- `url` The endpoint of the route. This can include named segments, and can also be a regular expression. See [Router](#router) for details on what you can do.
+  > Type: string  
+  > Required
+
+- `url` The endpoint of the route. This can include segments or be a regular expression. See [Router](#router) for details.
+
   > Type: string, regexp  
   > Required
 
 - `statusCode` The HTTP status code to return on a **successful** response.
+
   > Type: number  
   > Default: `200`
 
 - `validate` The validations to run against the request. See [Validation](#validation) for more info.
+
   > Type: object  
 
+<a name="route-prehandler"></a>
 - `preHandlers` The preHandler functions to run before the route's handler. See [PreHandlers](#prehandlers) for more info.
+
   > Type: array  
 
 - `handler` The request handler function. See [Handlers](#handlers) for more info.
+
   > Type: function  
   > Required
 
-- `onError` A custom function to run when an error occurs (overwrites default error handling). See [Errors](#errors) for more info. *Note: this is being used, you are responsible for your own error logging!*
+- `onError` A custom function to run when an error occurs (overwrites default error handling). See [Errors](#errors) for more info. *Note: if this is being used, you are responsible for your own error logging!*
+
   > Type: function  
 
 <a name="handlers"></a>
 ## Handlers
 
-Route handlers are functions on the route config that handle sending responses to the client. To respond from the handler, you can either return a value or return a Promise. The function two parameters passed to it: the [request](#request) object and the [response](#response) object.
+Route handlers are functions on the route config that handle sending responses to the client. To respond from the handler, you can either return a value or return a Promise. The function has two parameters passed to it: the [request](#request) object and the [response](#response) object.
 
 ```javascript
 server.route({
   // ...
   handler: (request, response) => {
-    response.setHeader('Some-Header', 'Some Value')
     return 'welcome!'
   }
 })
@@ -160,34 +178,35 @@ server.route({
 <a name="request"></a>
 #### request
 
-The request parameter is an object that contains information about the client's request.
+The request parameter is an object that contains information about the client request.
 
 - `body` The payload data from the request body.
 - `query` The query data from the request URL.
-- `params` The param data from the request URL (see [Router](#router) for more info).
+- `params` The param data from the request URL. See [Router](#router) for more info.
 - `headers` The request headers.
-- `context` The context data passed through the preHandlers.
+- `context` The context data passed through the preHandlers. See [Plugins](#plugins) for more info.
 - `info` Metadata about the request.
   - `remoteAddress` The client's IP address
 
 <a name="response"></a>
 #### response
 
-Unlike other Node web frameworks, the response parameter is not used to actually send the response itself--that is done by returning from the handler (with the exception of `.redirect`). This object contains helper methods to mutate the response *before it is sent*.
+Unlike other Node web frameworks, the response parameter is not used to actually send the response itself--that is done by returning from the handler (with the exception of `.redirect`). Instead, this object contains helper methods to mutate the response *before it is sent*.
 
-- `.pass(name, value)` Passes a piece of context between preHandlers (see [PreHandlers](#prehandlers) for more info). Context data is accessed in the handler with `request.context.*`.
+- `.pass(name, value)` Passes context between preHandlers (see [PreHandlers](#prehandlers) for more info). Context data is accessed in the handler with `request.context.*`.
 - `.setHeader(name, value)` Sets a response header.
-- `.redirect(url, code)` Sends a redirect response to the client. `code` defaults to `301` if not set. There is no need to return anything from the handler after this is called, as it sends the response.
+- `.redirect(url, code)` Sends a redirect response to the client. `code` defaults to `301` if not set. There is no need to return anything from the handler after this is called.
 
 <a name="prehandlers"></a>
 ## PreHandlers
 
-Route preHandlers follow the exact same structure as [Handlers](#handlers), but you can pass an array of them to the [routes config](#routesconfig) as well as the [server config](#global-prehandler). **They are guaranteed to run in order, making it possible to rely on context from other preHandlers.**
+Route preHandlers follow the exact same structure as [Handlers](#handlers), but you can pass an array of them to the [routes config](#route-prehandler) as well as the [server config](#global-prehandler).
+*Note: they are guaranteed to run in order, making it possible to rely on context from other preHandlers!*
 
 <a name="asyncawait"></a>
 ## Async/Await
 
-Since handlers are based on Promises, you can easily use ES7's async/await feature (as long as you are transpiling your code using something like [Babel](http://babeljs.io)). Any errors thrown are caught by Lightrail's error handler and outputted correctly. This removes the need to have a bunch of try/catch blocks (though you can still have them if you need to). Errors within sub-promises (such as the `createUser` function in the example below) will bubble up to the handler.
+Since handlers are based on Promises, you can easily use ES7's async/await feature. Any errors thrown within the handler are caught by Lightrail's error handler and outputted correctly. This removes the need to have a bunch of try/catch blocks (though you can still have them if you need to). Errors within sub-promises (such as the `createUser` function in the example below) will bubble up to the handler and outputted the same way.
 
 ```javascript
 server.route({
@@ -201,16 +220,17 @@ server.route({
 })
 ```
 
-*Note: If using Node >=6, all you need for async/await support is [transform-async-to-generator](https://babeljs.io/docs/plugins/transform-async-to-generator), rather than an entire preset.*
+*Note: If using Node >=6, all you need for async/await support is [transform-async-to-generator](https://babeljs.io/docs/plugins/transform-async-to-generator) rather than an entire preset.*
 
 <a name="router"></a>
 ## Router
 
-Lightrail comes with a built-in router that supports segment parameters and regular expressions. This provides a quick and flexible way to define your endpoints. *Note: You cannot have two routes defined with the same method and URL or a startup error will be thrown.*
+Lightrail comes with a built-in router that supports segment parameters and regular expressions. This provides a quick and flexible way to define your endpoints.
+*Note: You cannot have two routes defined with the same method and URL or a startup error will be thrown.*
 
 #### Segments
 
-Segments are named sections of the URL prefixed with `:` to pass a value to the handler. You can have as many segments as you want in your URL.
+Segments are named sections of the URL prefixed with `:`, and they can pass values to the handler. You can have as many segments as you want in your URL.
 
 ```javascript
 server.route({
@@ -225,7 +245,8 @@ server.route({
 
 #### Regular Expressions
 
-The router also supports regular expressions, including their capture groups for getting data. If you define a URL as a regexp with a capture group (a section wrapped in parentheses), you can access that data by its index (`$1`, `$2`, etc.) *Note: if defining a regexp, make sure you either use a regexp literal or `new RegExp`.*
+The router also supports regular expressions, including their capture groups for getting data. If you define a URL as a regex with a capture group (a piece wrapped in parentheses), you can access that data by its regex index (`$1`, `$2`, etc.)
+*Note: if using a regex as a URL, make sure you either use a regular expression literal or `new RegExp()`. Read [this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) if you're new to regular expressions in Javascript.*
 
 ```javascript
 server.route({
@@ -241,9 +262,9 @@ server.route({
 <a name="validation"></a>
 ## Validation
 
-A `validate` object can be used on the [route config](#routesconfig) to run validations against the request body, query, and params. Lightrail comes with a list of predefined validations, which can be chained together. See the example below on how to use.
+A `validate` object can be used on the [routes config](#routesconfig) to run validations against the request body, query, and params. Lightrail comes with a list of predefined validations, which can be chained together. See the example below on how to use. If `stripUnknown` is enabled on the server, any values not in the `validate` object will be throw away.
 
-The response is not sent after one failed validation. Lightrail will continue through the validations and display *all* errors in the response rather than just the first one.
+The response is not sent after one failed validation. Lightrail will continue through the validations and display *all* errors in the response rather than just the first one. However, only one error from each validation chain is thrown at a time.
 
 ```javascript
 const { Validator } = require('lightrail')
@@ -262,38 +283,52 @@ server.route({
 })
 ```
 
+Validation errors will look like this in the response:
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "message": "A validation error occurred",
+  "validation": [
+    { "field": "id", "message": "...", "where": "params" },
+    { "field": "name", "message": "...", "where": "body" }
+  ]
+}
+```
+
 #### Predefined Validations
 
-- `required()`
-- `contains(string)`
-- `equals(compare)`
-- `isAfter(date)`
-- `isAlpha(locale)`
-- `isAlphanumeric(locale)`
-- `isAscii()`
-- `isBase64()`
-- `isBefore(date)`
-- `isBoolean()`
-- `isCurrency(opts)`
-- `isDataURI()`
-- `isDate()`
-- `isDivisibleBy(num)`
-- `isEmail(opts)`
-- `isFQDN(opts)`
-- `isIpAddress(ver)`
-- `isEnum(values)`
-- `isNumber(opts = {})`
-- `isJSON()`
-- `isLength(opts)`
-- `isLowercase()`
-- `isMACAddress()`
-- `isPhoneNumber(locale)`
-- `isMongoId()`
-- `isURL(opts)`
-- `isUUID(ver)`
-- `isUppercase()`
-- `isWhitelisted(chars)`
-- `matches(pattern, mods)`
+- `.required()`
+- `.contains(string)`
+- `.equals(compare)`
+- `.isAfter(date)`
+- `.isAlpha(locale)`
+- `.isAlphanumeric(locale)`
+- `.isAscii()`
+- `.isBase64()`
+- `.isBefore(date)`
+- `.isBoolean()`
+- `.isCurrency(opts)`
+- `.isDataURI()`
+- `.isDate()`
+- `.isDivisibleBy(num)`
+- `.isEmail(opts)`
+- `.isFQDN(opts)`
+- `.isIpAddress(ver)`
+- `.isEnum(values)`
+- `.isNumber(opts = {})`
+- `.isJSON()`
+- `.isLength(opts)`
+- `.isLowercase()`
+- `.isMACAddress()`
+- `.isPhoneNumber(locale)`
+- `.isMongoId()`
+- `.isURL(opts)`
+- `.isUUID(ver)`
+- `.isUppercase()`
+- `.isWhitelisted(chars)`
+- `.matches(pattern, mods)`
 
 Most of these validations use [validator.js](https://github.com/chriso/validator.js), so visit the Readme in that repo for further details.
 
@@ -303,18 +338,19 @@ Most of these validations use [validator.js](https://github.com/chriso/validator
 Any errors occurring throughout the application or in an [async/await](#asyncawait) function will be automatically logged and formatted for the response. Errors can occur in a few different ways:
 
 - By `throw`ing anywhere in the app
-- Returning an error object from a handler
+- Runtime code errors
+- Returning an error from a handler
 - An unhandled promise rejection
 
 Error responses are simply objects with the following structure:
 
 - `statusCode` The status code of the error (uses `500` for unknown errors)
 - `error` The error type that occurred
-- `message` The descriptive error message for the client
+- `message` A descriptive error message for the client
 
 If a [Javascript Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) is thrown, a `500 Internal Server Error` will be returned, and **if in dev mode** (meaning `NODE_ENV` starts with `dev`), the error message will be sent to the response as well for easy debugging. All server errors (meaning statusCode is >= 500) will be logged to the console with a description and a stack trace.
 
-Lightrail comes with a list of predefined errors that accept custom messages. See the example below on how to use them.
+Lightrail comes with a list of predefined errors that accept custom messages (set as the `message` key in the response). See the example below on how to use them.
 
 ```javascript
 const { Errors } = require('lightrail')
@@ -381,16 +417,16 @@ server.route({
 <a name="logging"></a>
 ## Logging
 
-By default, all Lightrail logging is turned on. This can be modified by specifying [log tags](#logtags) in the server config. Each line outputted includes the server name, a timestamp, and the message. Here are the available log tags:
+By default, all Lightrail logging is turned on. This can be modified by specifying [log tags](#logtags) in the server config. Each line outputted to the console includes the server name, a timestamp, and the message. Here are the available log tags:
 
-- `server` Will output a message when the server starts with the URL it can be accessed at.
-- `request` Will output the method, URL, IP address, and response status code anytime a client makes a request.
-- `error` Will output any server errors, meaning any error with a statusCode >= 500 (which includes any runtime errors). Errors will include a message, and a stack trace.
+- `server` Outputs a message when the server starts with its URL.
+- `request` Outputs the method, URL, IP address, and response code when a client makes a request.
+- `error` Outputs any server errors, meaning any error with a statusCode >= 500 (which includes runtime errors). Logged errors will include a message, and a stack trace.
 
-Colors in the output can be turned off if they are causing problems by specifying `colors: false` in the [server config](#colors). *Note: if you specify custom log tags, the default will be overwritten. So whatever you specify will be the only active tags.*
+Colors in the output can be turned off if they are causing problems by specifying `colors: false` in the [server config](#colors). *Note: if you specify any log tags, the default tags will be overwritten. So whatever you specify will be the only active tags.*
 
 <a name="server"></a>
-## Server
+## Server API
 
 The Lightrail server is a class that must be instantiated with the `new` keyword, and can be passed an optional object of configuration options.
 
@@ -400,7 +436,7 @@ const server = new Lightrail({/* configuration */})
 
 ##### server.start(callback)
 
-Starts running the server on the host and port defined in the instantiation. Will return a promise and a callback, both passing through the URL of the running server.
+Starts the server on the host and port defined in the instantiation. This will return a promise or you can use a callback, both of which pass the URL of the server.
 
 ```javascript
 /* with a callback */
@@ -412,7 +448,7 @@ server.start().then((url) => console.log(`Running at ${url}`))
 
 ##### server.route(config)
 
-Creates a new route. Can be passed a single route config, or an array of configs for defining multiple routes at once. See [Routes Config](#routesconfig) for structure.
+Creates a new route. Can be a single route config, or an array of configs for creating multiple routes at once. See [Routes Config](#routesconfig) for structure.
 
 ```javascript
 /* for a single route */
@@ -427,13 +463,15 @@ server.route([
 
 ##### server.routes(config)
 
-You can use this to scan a directory and pull in routes from the files within it. Prevents having to manually pull in all your routes if they are all grouped together. Requires a config object with the following structure:
+You can use this to scan a directory and pull in routes from many files. Prevents having to manually require and create all your routes. Takes a config object with the following structure.
 
-- `dir` A [glob](https://en.wikipedia.org/wiki/Glob_(programming)) pattern to search.
+- `dir` A [glob](https://en.wikipedia.org/wiki/Glob_(programming)) pattern to search for.
+
   > Type: string  
-  > Default: `**/*.js`
+  > Default: `routes/**/*.js`
 
 - `cwd` The current working directory to use.
+
   > Type: string  
   > Default: `process.cwd()`
 
@@ -446,7 +484,7 @@ server.routes({
 
 ##### server.inject(config)
 
-Lets you inject API requests without the overhead of starting the server. This works great for integration testing your endpoints. Method must be passed an object with a `method` and `url`, as well as optional `headers` and `body`. Returns a promise resolving with the response.
+Lets you inject API requests without the overhead of starting the server. This works great for running integration tests on your endpoints. Takes an object with a `method` and `url`, as well as optional `headers` and `body`. Returns a Promise resolving with the response.
 
 ```javascript
 /* define the route */
@@ -469,9 +507,9 @@ server.inject({
 <a name="plugins"></a>
 ## Plugins
 
-Lightrail easily supports third-party plugins through the use of [PreHandlers](#prehandlers). To create a plugin, simply create a preHandler that exports a function returning a promise. Then it can be set as a [global preHandler](#global-prehandler) in the app. That's it!
+Lightrail easily supports third-party plugins through the use of [PreHandlers](#prehandlers). To create a plugin, simply create a preHandler that exports a function returning a Promise (if async). Then it can be set as a [global preHandler](#global-prehandler) in the app using the plugin. That's it!
 
-You can also pass context from your plugin to other plugins and the route handler by using `response.pass(name, value)` (see [response](#response)). These values are then accessed in the route handler by `request.context.*`.
+You can also pass context from your plugin to other plugins as well as the route handler by using `response.pass(name, value)` (see [response](#response)). These values are then accessed with `request.context.*`.
 
 ##### Rate Limiter Example
 

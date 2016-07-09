@@ -152,7 +152,7 @@ export function createRoute (route) {
  */
 export function getAllRoutes (data = {}) {
   /* resolve to absolute directory */
-  data.dir = path.resolve(data.cwd || process.cwd(), data.dir || '**/*.js')
+  data.dir = path.resolve(data.cwd || process.cwd(), data.dir || 'routes/**/*.js')
 
   glob.sync(data.dir).forEach((file) => {
     const routes = require(file)
