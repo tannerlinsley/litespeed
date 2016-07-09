@@ -22,10 +22,7 @@ export default function (tag, ...msg) {
   return (code) => {
     if (code && tag === 'request') {
       /* if the log is a request log, this outputs the statusCode after the request complets */
-      const statusCode = code >= 400
-        ? chalk.red(code)
-        : chalk.green(code)
-
+      const statusCode = code >= 400 ? chalk.red(code) : chalk.green(code)
       process.stdout.write(` - ${statusCode}`)
     }
 

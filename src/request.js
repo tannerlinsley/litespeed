@@ -252,7 +252,7 @@ export async function runValidations (route, data) {
   /* will contain all validation errors that occur throughout function */
   let allErrors = []
 
-  /* set defaults */
+  /* make sure defaults exist */
   const validation = Object.assign({}, {
     body: {}, query: {}, params: {}
   }, route.validate)
