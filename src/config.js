@@ -39,6 +39,9 @@ const config = {
   /* setup log tags */
   logs: ['server', 'request', 'error'],
   logs__type: ['array', 'boolean'],
+  /* whether to use colors when logging */
+  colors: true,
+  colors__type: 'boolean',
   /* prehandler functions */
   preHandlers: [],
   preHandlers__type: 'array'

@@ -2,9 +2,10 @@ import qs from 'querystring'
 import typer from 'media-typer'
 import rawBody from 'raw-body'
 import config from './config'
+import log from './log'
 import { sendResponse } from './response'
 import { lookupRoute, removeUrlQuery, getParamData, getQueryData } from './router'
-import { getIpAddress, logTurnedOn, promiseWaterfall } from './utils'
+import { getIpAddress, promiseWaterfall } from './utils'
 import Errors, { cleanStackTrace } from './errors'
 
 /**
@@ -15,6 +16,9 @@ import Errors, { cleanStackTrace } from './errors'
 export async function onRequest (request, response) {
   let route
   try {
+    /* log request info */
+    const finishLog = log('request', request.method, request.url, 'from', getIpAddress(request))
+
     /* set timeout, and send 408 when it happens */
     let hasTimedOut = false
     response.setTimeout(config.timeout, (socket) => {
@@ -34,6 +38,11 @@ export async function onRequest (request, response) {
 
     /* route not found */
     if (!route) throw new Errors().notFound()
+
+    /* require a user-agent */
+    if (config.protective && !request.headers['user-agent']) {
+      throw new Errors().forbidden('Make sure your request has a User-Agent header')
+    }
 
     /* send route options if requested */
     if (getOptions) {
@@ -65,17 +74,11 @@ export async function onRequest (request, response) {
     const responseData = {
       pass: (name, value) => (requestData.context[name] = value),
       setHeader: (name, value) => response.setHeader(name, value),
-      redirect: (url) => (response._redirectTo = url)
+      redirect: (url, code = 301) => (response._redirectTo = { url, code })
     }
 
     /* validate data */
     await runValidations(route, requestData)
-
-    /* log request info */
-    if (logTurnedOn('request')) {
-      const { remoteAddress } = requestData.info
-      console.log(`=> ${new Date().toISOString()} ${request.method} ${request.url} from ${remoteAddress}`)
-    }
 
     /* run prehandlers */
     const preHandlers = config.preHandlers.concat(route.preHandlers || [])
@@ -104,6 +107,8 @@ export async function onRequest (request, response) {
       throw result
     }
 
+    /* output statusCode for request log */
+    finishLog(statusCode)
     /* respond with result */
     if (!hasTimedOut) sendResponse(response, statusCode, result)
   } catch (error) {
@@ -131,6 +136,9 @@ export async function onError (response, error, route) {
     /* default to code 500 if not specified */
     const statusCode = error.statusCode || 500
 
+    /* output statusCode for request log */
+    log('request')(statusCode)
+
     /* format error if it's not already */
     const errorResponse = !error.error
       ? new Errors(statusCode, error.message || error)
@@ -138,17 +146,15 @@ export async function onError (response, error, route) {
 
     /* display and log server errors correctly */
     if (statusCode >= 500) {
-      if (logTurnedOn('error')) {
-        let toLog = error
+      let toLog = error
 
-        /* turn into an error if needed */
-        if (!(toLog instanceof Error)) {
-          toLog = new Error(JSON.stringify(toLog))
-        }
-
-        /* log out error with a filtered stack trace */
-        console.error(cleanStackTrace(toLog))
+      /* turn into an error if needed */
+      if (!(toLog instanceof Error)) {
+        toLog = new Error(JSON.stringify(toLog))
       }
+
+      /* log out error with a filtered stack trace */
+      log('error', cleanStackTrace(toLog))()
 
       /* remove server errors unless in dev mode */
       if (statusCode >= 500 && !config._isDev() && errorResponse.message) {
@@ -159,6 +165,7 @@ export async function onError (response, error, route) {
     /* respond with error */
     sendResponse(response, statusCode, errorResponse)
   } catch (err) {
+    /* this should catch syntax/runtime errors */
     console.error(err)
     sendResponse(response, 500, new Errors(500))
   }
@@ -171,9 +178,6 @@ export async function onError (response, error, route) {
  * @returns {object} The body data
  */
 export async function getBodyData (request) {
-  /* only look for body on these methods */
-  if (!request.method.match(/^(post|put|patch)$/i)) return
-
   /* parse content type so we can process data */
   const contentType = request.headers['content-type'] || 'text/plain; charset=utf-8'
   const mediaType = typer.parse(contentType)

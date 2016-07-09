@@ -19,6 +19,12 @@ class Lightrail {
      * define front-facing API methods
      */
 
+    this.start = async (cb) => {
+      // await docs()
+      await server(cb)
+      return this
+    }
+
     this.route = (route) => {
       createRoute(route)
       return this
@@ -26,12 +32,6 @@ class Lightrail {
 
     this.routes = (route) => {
       getAllRoutes(route)
-      return this
-    }
-
-    this.start = async (cb) => {
-      // await docs()
-      await server(cb)
       return this
     }
 

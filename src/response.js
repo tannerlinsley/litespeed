@@ -12,9 +12,10 @@ import config from './config'
 export function sendResponse (response, statusCode, data) {
   /* if a redirect was set from the handler */
   if (response._redirectTo) {
-    response.statusCode = 301
-    response.setHeader('Location', response._redirectTo)
-    response.end(`Redirecting to ${response._redirectTo}`)
+    const { code, url } = response._redirectTo
+    response.statusCode = code
+    response.setHeader('Location', url)
+    response.end(`Redirecting to ${url}`)
     return
   }
 
