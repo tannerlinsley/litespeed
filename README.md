@@ -5,8 +5,6 @@
 [![Code Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 [![Chat Room](https://badges.gitter.im/jsonmaur/lightrail.svg)](https://gitter.im/jsonmaur/lightrail?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-> *This package is under active development. Try it out!*
-
 - [Installation](#installation)
 - [Example](#example)
 - [Configuration](#configuration)
@@ -18,7 +16,7 @@
 - [Validation](#validation)
 - [Errors](#errors)
 - [Logging](#logging)
-- [Server API](#server)
+- [Server API](#serverapi)
 - [Plugins](#plugins)
 - [Contributing](#contributing)
 - [License](#license)
@@ -27,7 +25,7 @@ Lightrail is a micro web framework for building APIs in Node.js. Based on config
 
 #### Why another Node framework?
 
-There are a lot of great frameworks out there such as [Express](http://expressjs.com), [Restify](http://restify.com), [Koa](http://koajs.com), and [Hapi](http://hapijs.com). They have been around for awhile, and each have their place in the Javascript ecosystem. But they are overkill for most apps, and difficult for beginners to learn. Lightrail is a lightweight approach that takes ideas from other frameworks and brings them together in an easy to understand way.
+There are a lot of great frameworks out there such as [Express](http://expressjs.com), [Restify](http://restify.com), [Koa](http://koajs.com), and [Hapi](http://hapijs.com). They have been around for awhile, and each have their place in the Javascript ecosystem. But a lot of the time, they can be overkill for your app, especially if you need something simple but extendable for a microservice API. Lightrail is a lightweight approach that takes ideas from other frameworks and brings them together in a compact and easy to understand way. It's also nice to have built-in validation, error handling, and logging ;)
 
 <a name="installation"></a>
 ## Installation
@@ -160,6 +158,10 @@ A route is defined by a simple object with the following configuration.
 - `onError` A custom function to run when an error occurs (overwrites default error handling). See [Errors](#errors) for more info. *Note: if this is being used, you are responsible for your own error logging!*
 
   > Type: function  
+
+#### HTTP OPTIONS
+
+The HTTP OPTIONS request is handled automatically for each URL. If requested, the server will respond with an empty body and the `Allow` header with each method supported for that particular URL.
 
 <a name="handlers"></a>
 ## Handlers
@@ -425,7 +427,7 @@ By default, all Lightrail logging is turned on. This can be modified by specifyi
 
 Colors in the output can be turned off if they are causing problems by specifying `colors: false` in the [server config](#colors). *Note: if you specify any log tags, the default tags will be overwritten. So whatever you specify will be the only active tags.*
 
-<a name="server"></a>
+<a name="serverapi"></a>
 ## Server API
 
 The Lightrail server is a class that must be instantiated with the `new` keyword, and can be passed an optional object of configuration options.

@@ -120,12 +120,19 @@ export function createRoute (route) {
   if (!route) {
     throw new TypeError('Routes must have a configuration object')
   }
+  if (!typeOf(route.method) !== 'string') {
+    throw new TypeError('Route method must be a string')
+  }
   if (!typeOf(route.url).match(/(string|regexp)/)) {
     // TODO: check for a valid url
     throw new TypeError('Route URL must be a string or regex')
   }
   if (typeOf(route.handler) !== 'function') {
     throw new TypeError('Route handler must be a function!')
+  }
+  /* options is handled automatically */
+  if (route.method.match(/^options$/i)) {
+    throw new Error('Cannot define OPTIONS, this is handled automatically')
   }
 
   /* get regex url and and method type */
