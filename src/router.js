@@ -2,7 +2,7 @@ import path from 'path'
 import glob from 'glob'
 import qs from 'querystring'
 import config from './config'
-import { escapeRegex, typeOf } from './utils'
+import { escapeRegex, stringifyRegex, typeOf } from './utils'
 
 /**
  * Converts a segment URL to a regex.
@@ -19,7 +19,7 @@ export function expandUrl (url) {
 
   /* normalize leading and trailing slashes */
   if (url.charAt(0) !== '/') url = '/' + url
-  if (url.slice(-1) === '/') url = url.substring(0, url.length - 1)
+  if (url.slice(-1) === '/' && url !== '/') url = url.substring(0, url.length - 1)
 
   /* split url at each slash */
   const split = url.split('/')
@@ -108,7 +108,7 @@ export function lookupRoute (route, getAll = false) {
   }
 
   const key = Object.keys(routes).find((r) => {
-    const regex = new RegExp(r)
+    const regex = new RegExp(stringifyRegex(r))
     return route.url.match(regex)
   })
   if (!key) return

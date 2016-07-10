@@ -4,10 +4,10 @@ import config from './config'
 
 const customConfig = {
   _routeMap: {
-    '^\\/$': {
+    '/^\\/$/': {
       get: { method: 'GET', url: '/' }
     },
-    '^\\/hello\\/[^\\/\\?]+$': {
+    '/^\\/hello\\/[^\\/\\?]+$/': {
       get: { method: 'GET', url: '/hello/:name' }
     }
   }
