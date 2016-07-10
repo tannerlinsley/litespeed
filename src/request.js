@@ -51,6 +51,8 @@ export async function onRequest (request, response) {
         .map((r) => r.toUpperCase()).join(', ')
 
       response.setHeader('Allow', allow)
+      finishLog(200)
+
       return sendResponse(response)
     }
 

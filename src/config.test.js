@@ -6,10 +6,7 @@ test('config', (t) => {
   t.is(config.name, 'Lightrail')
   t.is(config.host, '0.0.0.0')
   t.is(config.port, 8000)
-  t.is(config.timeout, 5000)
-  t.is(config.payloadLimit, 1048576)
   t.true(config.stripUnknown)
-  t.true(config.protective)
   t.is(typeof config.logs, 'object')
   t.is(typeof config._routeMap, 'object')
   t.true(config._isDev())
@@ -22,20 +19,20 @@ test('updateConfig', (t) => {
     host: '0.0.0.0',
     port: 7000,
     stripUnknown: false,
-    protective: false,
     logs: false
   })
   t.is(config.name, 'Hi')
   t.is(config.host, '0.0.0.0')
   t.is(config.port, 7000)
   t.false(config.stripUnknown)
-  t.false(config.protective)
   t.false(config.logs)
   t.false(config._isDev())
+  updateConfig() // with no object
+  t.is(config.name, 'Hi')
 })
 
-test('updateConfig', (t) => {
-  process.env.NODE_ENV = 'production'
-  updateConfig()
-  t.is(config.name, 'Hi')
+test('updateConfig (errors)', (t) => {
+  t.throws(() => updateConfig({ _isDev: 'hi' }), Error)
+  t.throws(() => updateConfig({ whatup: 'hi' }), Error)
+  t.throws(() => updateConfig({ port: '12345' }), TypeError)
 })

@@ -15,6 +15,9 @@ const config = {
   /* the port to run on */
   port: process.env.PORT || 8000,
   port__type: 'number',
+  /* whether to accept a trailing slash */
+  trailingSlash: true,
+  trailingSlash__type: 'boolean',
   /* whether to prettify output JSON */
   pretty: false,
   pretty__type: 'boolean',

@@ -11,15 +11,12 @@
 - [Routes Config](#routesconfig)
 - [Handlers](#handlers)
 - [PreHandlers](#prehandlers)
-- [Async/Await](#asyncawait)
 - [Router](#router)
 - [Validation](#validation)
 - [Errors](#errors)
 - [Logging](#logging)
 - [Server API](#serverapi)
 - [Plugins](#plugins)
-- [Contributing](#contributing)
-- [License](#license)
 
 Lightrail is a micro web framework for building APIs in Node.js. Based on configuration and promises, it keeps things fast, simple, predictable, and is a breeze to get started. It comes with built-in input validation, a routing library, an error library, support for pre-handlers (aka middleware), and more. A perfect solution for [microservices](https://en.wikipedia.org/wiki/Microservices)!
 
@@ -72,6 +69,11 @@ There are several config options, all of which have optimal values by default. B
 
   > Type: number  
   > Default: `process.env.PORT || 8000`
+
+- `trailingSlash` Whether to accept a URL both with and without a trailing slash. If `true`, the trailing slash is ignored and the route is still found. If `false`, the route will return a 404 with a trailing slash.
+
+  > Type: boolean  
+  > Default: `true`
 
 - `pretty` Whether to prettify the response JSON.
 
@@ -199,14 +201,8 @@ Unlike other Node web frameworks, the response parameter is not used to actually
 - `.setHeader(name, value)` Sets a response header.
 - `.redirect(url, code)` Sends a redirect response to the client. `code` defaults to `301` if not set. There is no need to return anything from the handler after this is called.
 
-<a name="prehandlers"></a>
-## PreHandlers
-
-Route preHandlers follow the exact same structure as [Handlers](#handlers), but you can pass an array of them to the [routes config](#route-prehandler) as well as the [server config](#global-prehandler).
-*Note: they are guaranteed to run in order, making it possible to rely on context from other preHandlers!*
-
 <a name="asyncawait"></a>
-## Async/Await
+#### Async/Await
 
 Since handlers are based on Promises, you can easily use ES7's async/await feature. Any errors thrown within the handler are caught by Lightrail's error handler and outputted correctly. This removes the need to have a bunch of try/catch blocks (though you can still have them if you need to). Errors within sub-promises (such as the `createUser` function in the example below) will bubble up to the handler and outputted the same way.
 
@@ -223,6 +219,12 @@ server.route({
 ```
 
 *Note: If using Node >=6, all you need for async/await support is [transform-async-to-generator](https://babeljs.io/docs/plugins/transform-async-to-generator) rather than an entire preset.*
+
+<a name="prehandlers"></a>
+## PreHandlers
+
+Route preHandlers follow the exact same structure as [Handlers](#handlers), but you can pass an array of them to the [routes config](#route-prehandler) as well as the [server config](#global-prehandler).
+*Note: they are guaranteed to run in order, making it possible to rely on context from other preHandlers!*
 
 <a name="router"></a>
 ## Router

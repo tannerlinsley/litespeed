@@ -17,6 +17,10 @@ export function expandUrl (url) {
     throw new TypeError('URL must be a string')
   }
 
+  /* normalize leading and trailing slashes */
+  if (url.charAt(0) !== '/') url = '/' + url
+  if (url.slice(-1) === '/') url = url.substring(0, url.length - 1)
+
   /* split url at each slash */
   const split = url.split('/')
 
@@ -98,6 +102,11 @@ export function removeUrlQuery (url = '') {
 export function lookupRoute (route, getAll = false) {
   const routes = config._routeMap
 
+  /* remove trailing slash */
+  if (config.trailingSlash && route.url.slice(-1) === '/') {
+    route.url = route.url.substring(0, route.url.length - 1)
+  }
+
   const key = Object.keys(routes).find((r) => {
     const regex = new RegExp(stringifyRegex(r))
     return route.url.match(regex)
@@ -120,7 +129,7 @@ export function createRoute (route) {
   if (!route) {
     throw new TypeError('Routes must have a configuration object')
   }
-  if (!typeOf(route.method) !== 'string') {
+  if (typeOf(route.method) !== 'string') {
     throw new TypeError('Route method must be a string')
   }
   if (!typeOf(route.url).match(/(string|regexp)/)) {
