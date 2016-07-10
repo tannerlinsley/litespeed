@@ -1,6 +1,6 @@
 {
   "name": "lightrail",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A micro web framework",
   "author": "jsonmaur",
   "license": "MIT",
