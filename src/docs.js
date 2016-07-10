@@ -1,3 +1,7 @@
+/**
+ * THIS MODULE IS EXPERIMENTAL, IT HASN'T BEEN DOCUMENTED YET.
+ */
+
 import fs from 'fs-extra'
 import config from './config'
 import { createRoute } from './router'

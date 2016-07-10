@@ -2,7 +2,7 @@ import path from 'path'
 import glob from 'glob'
 import qs from 'querystring'
 import config from './config'
-import { escapeRegex, stringifyRegex, typeOf } from './utils'
+import { escapeRegex, typeOf } from './utils'
 
 /**
  * Converts a segment URL to a regex.
@@ -49,19 +49,19 @@ export function getParamData (url, fromUrl) {
     throw new TypeError('URL must be a string')
   }
 
-  const urlSplit = removeUrlQuery(url).split('/')
   const data = {}
-
-  stringifyRegex(fromUrl).split('/').forEach((seg, indx) => {
-    const match = seg.match(/^:(.*)/)
-    if (match) data[match[1]] = urlSplit[indx]
-  })
+  const urlSplit = removeUrlQuery(url).split('/')
 
   /* if url is a regex, extract matched data */
   if (typeOf(fromUrl) === 'regexp') {
     url.match(fromUrl).slice(1).forEach((val, indx) => {
       /* add to data as '$1', '$2', etc. */
       data[`$${indx + 1}`] = val
+    })
+  } else {
+    fromUrl.split('/').forEach((seg, indx) => {
+      const match = seg.match(/^:(.*)/)
+      if (match) data[match[1]] = urlSplit[indx]
     })
   }
 
@@ -103,12 +103,12 @@ export function lookupRoute (route, getAll = false) {
   const routes = config._routeMap
 
   /* remove trailing slash */
-  if (config.trailingSlash && route.url.slice(-1) === '/') {
+  if (config.trailingSlash && route.url.slice(-1) === '/' && route.url !== '/') {
     route.url = route.url.substring(0, route.url.length - 1)
   }
 
   const key = Object.keys(routes).find((r) => {
-    const regex = new RegExp(stringifyRegex(r))
+    const regex = new RegExp(r)
     return route.url.match(regex)
   })
   if (!key) return

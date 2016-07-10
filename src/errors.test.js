@@ -21,6 +21,10 @@ test('cleanStackTrace', (t) => {
   t.deepEqual(cleanStackTrace({ hi: 'hi' }), { hi: 'hi' })
 })
 
+// -----------------------------------------------------------------------------
+// error types
+// -----------------------------------------------------------------------------
+
 test('badRequest', (t) => {
   t.deepEqual(new Errors().badRequest(), { statusCode: 400, error: 'Bad Request' })
   t.deepEqual(new Errors().badRequest('hey'), { statusCode: 400, error: 'Bad Request', message: 'hey' })

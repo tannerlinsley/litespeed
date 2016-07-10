@@ -18,19 +18,20 @@ const router = proxyquire('./router', {
 })
 
 test('expandUrl', (t) => {
-  t.is(router.expandUrl('/:name'), '^\\/[^\\/\\?]+$')
-  t.is(router.expandUrl('/hello/:name'), '^\\/hello\\/[^\\/\\?]+$')
-  t.is(router.expandUrl('/hello/:name/:hi'), '^\\/hello\\/[^\\/\\?]+\\/[^\\/\\?]+$')
-  t.is(router.expandUrl('/hello/:name:hi'), '^\\/hello\\/[^\\/\\?]+$')
-  t.is(router.expandUrl('/hello/:name/test'), '^\\/hello\\/[^\\/\\?]+\\/test$')
-  t.is(router.expandUrl('/hello/:name/test/:hi'), '^\\/hello\\/[^\\/\\?]+\\/test\\/[^\\/\\?]+$')
-  t.is(router.expandUrl('/hello/.*', false), '^\\/hello\\/.*$')
+  t.deepEqual(router.expandUrl('/:name'), /^\/[^\/\?]+$/)
+  t.deepEqual(router.expandUrl('/hello/:name'), /^\/hello\/[^\/\?]+$/)
+  t.deepEqual(router.expandUrl('/hello/:name/:hi'), /^\/hello\/[^\/\?]+\/[^\/\?]+$/)
+  t.deepEqual(router.expandUrl('/hello/:name:hi'), /^\/hello\/[^\/\?]+$/)
+  t.deepEqual(router.expandUrl('/hello/:name/test'), /^\/hello\/[^\/\?]+\/test$/)
+  t.deepEqual(router.expandUrl('/hello/:name/test/:hi'), /^\/hello\/[^\/\?]+\/test\/[^\/\?]+$/)
+  t.deepEqual(router.expandUrl(/\/hello\/(.*)/), /\/hello\/(.*)/)
   t.throws(() => router.expandUrl(), TypeError)
   t.throws(() => router.expandUrl(1), TypeError)
 })
 
 test('getParamData', (t) => {
   t.deepEqual(router.getParamData('/jason', '/:name'), { name: 'jason' })
+  t.deepEqual(router.getParamData('/jason', /^\/([^\/\?]+)$/), { $1: 'jason' })
   t.deepEqual(router.getParamData('/name/jason', '/name/:name'), { name: 'jason' })
   t.deepEqual(router.getParamData('/name/jason/test/yo', '/name/:name/test/:hi'), { name: 'jason', hi: 'yo' })
   t.deepEqual(router.getParamData('/hi/hey', '/:one/:two'), { one: 'hi', two: 'hey' })
@@ -68,7 +69,7 @@ test('lookupRoute', (t) => {
 test('createRoute', (t) => {
   const route = { method: 'GET', url: '/whatup', handler: () => {} }
   router.createRoute(route)
-  t.deepEqual(customConfig._routeMap['^\\/whatup$'].get, route)
+  t.deepEqual(customConfig._routeMap['/^\\/whatup$/'].get, route)
   t.throws(() => router.createRoute(route), Error, 'duplicate route')
   t.throws(() => router.createRoute(), TypeError, 'no config')
   t.throws(() => router.createRoute({ method: 'HI' }), TypeError, 'invalid method')
@@ -82,6 +83,6 @@ test('createRoute (arrays)', (t) => {
     { method: 'GET', url: '/testing', handler: () => {} }
   ]
   router.createRoute(routes)
-  t.deepEqual(customConfig._routeMap['^\\/hello$'].get, routes[0])
-  t.deepEqual(customConfig._routeMap['^\\/testing$'].get, routes[1])
+  t.deepEqual(customConfig._routeMap['/^\\/hello$/'].get, routes[0])
+  t.deepEqual(customConfig._routeMap['/^\\/testing$/'].get, routes[1])
 })
