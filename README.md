@@ -111,8 +111,13 @@ There are several config options, all of which have optimal values by default. B
   > Type: array, boolean  
   > Default: all
 
-<a name="colors"></a>
-- `colors` Whether to use CLI colors when logging.
+- `logTimestamp` Whether to log the current timestamp with each message.
+
+  > Type: boolean  
+  > Default: `true`
+
+<a name="logcolors"></a>
+- `logColors` Whether to use CLI logColors when logging.
 
   > Type: boolean  
   > Default: `true`
@@ -427,7 +432,7 @@ By default, all Lightrail logging is turned on. This can be modified by specifyi
 - `request` Outputs the method, URL, IP address, and response code when a client makes a request.
 - `error` Outputs any server errors, meaning any error with a statusCode >= 500 (which includes runtime errors). Logged errors will include a message, and a stack trace.
 
-Colors in the output can be turned off if they are causing problems by specifying `colors: false` in the [server config](#colors). *Note: if you specify any log tags, the default tags will be overwritten. So whatever you specify will be the only active tags.*
+Colors in the output can be turned off if they are causing problems by specifying `logColors: false` in the [server config](#logcolors). *Note: if you specify any log tags, the default tags will be overwritten. So whatever you specify will be the only active tags.*
 
 <a name="serverapi"></a>
 ## Server API

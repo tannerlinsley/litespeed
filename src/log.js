@@ -8,13 +8,16 @@ export default function (tag, ...msg) {
   }
 
   /* enable or disable color */
-  const chalk = new Chalk.constructor({ enabled: config.colors })
+  const chalk = new Chalk.constructor({ enabled: config.logColors })
 
   if (msg.length) {
-    const timestamp = chalk.cyan(`${new Date().toISOString()}`)
+    const timestamp = config.logTimestamp
+      ? ' ' + chalk.cyan(`${new Date().toISOString()}`)
+      : ''
+
     const message = tag === 'error'
       ? chalk.red(...msg)
-      : `${chalk.dim(config.name)} ${timestamp} ${msg.join(' ')}`
+      : `${chalk.dim(config.name)}${timestamp} ${msg.join(' ')}`
 
     process.stdout.write(message)
   }

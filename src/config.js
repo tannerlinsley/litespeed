@@ -42,9 +42,12 @@ const config = {
   /* setup log tags */
   logs: ['server', 'request', 'error'],
   logs__type: ['array', 'boolean'],
+  /* whether to log the timestamp */
+  logTimestamp: true,
+  logTimestamp__type: 'boolean',
   /* whether to use colors when logging */
-  colors: true,
-  colors__type: 'boolean',
+  logColors: true,
+  logColors__type: 'boolean',
   /* prehandler functions */
   preHandlers: [],
   preHandlers__type: 'array'
