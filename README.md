@@ -1,9 +1,9 @@
-# Lightrail
+# Litespeed
 
-[![Build Status](https://travis-ci.org/jsonmaur/lightrail.svg?branch=master)](https://travis-ci.org/jsonmaur/lightrail)
-[![Coverage Status](https://coveralls.io/repos/github/jsonmaur/lightrail/badge.svg?branch=master)](https://coveralls.io/github/jsonmaur/lightrail?branch=master)
+[![Build Status](https://travis-ci.org/jsonmaur/litespeed.svg?branch=master)](https://travis-ci.org/jsonmaur/litespeed)
+[![Coverage Status](https://coveralls.io/repos/github/jsonmaur/litespeed/badge.svg?branch=master)](https://coveralls.io/github/jsonmaur/litespeed?branch=master)
 [![Code Style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
-[![Chat Room](https://badges.gitter.im/jsonmaur/lightrail.svg)](https://gitter.im/jsonmaur/lightrail?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Chat Room](https://badges.gitter.im/jsonmaur/litespeed.svg)](https://gitter.im/jsonmaur/litespeed?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 - [Installation](#installation)
 - [Example](#example)
@@ -18,28 +18,28 @@
 - [Server API](#serverapi)
 - [Plugins](#plugins)
 
-Lightrail is a micro web framework for building APIs in Node.js. Based on configuration and promises, it keeps things fast, simple, predictable, and is a breeze to get started. It comes with built-in input validation, a routing library, an error library, support for pre-handlers (aka middleware), and more. A perfect solution for [microservices](https://en.wikipedia.org/wiki/Microservices)!
+Litespeed is a micro web framework for building APIs in Node.js. Based on configuration and promises, it keeps things fast, simple, predictable, and is a breeze to get started. It comes with built-in input validation, a routing library, an error library, support for pre-handlers (aka middleware), and more. A perfect solution for [microservices](https://en.wikipedia.org/wiki/Microservices)!
 
 #### Why another Node framework?
 
-There are a lot of great frameworks out there such as [Express](http://expressjs.com), [Restify](http://restify.com), [Koa](http://koajs.com), and [Hapi](http://hapijs.com). They have been around for awhile, and each have their place in the Javascript ecosystem. But a lot of the time, they can be overkill for your app, especially if you need something simple but extendable for a microservice API. Lightrail is a lightweight approach that takes ideas from other frameworks and brings them together in a compact and easy to understand way. It's also nice to have built-in validation, error handling, and logging ;)
+There are a lot of great frameworks out there such as [Express](http://expressjs.com), [Restify](http://restify.com), [Koa](http://koajs.com), and [Hapi](http://hapijs.com). They have been around for awhile, and each have their place in the Javascript ecosystem. But a lot of the time, they can be overkill for your app, especially if you need something simple but extendable for a microservice API. Litespeed is a lightweight approach that takes ideas from other frameworks and brings them together in a compact and easy to understand way. It's also nice to have built-in validation, error handling, and logging ;)
 
 <a name="installation"></a>
 ## Installation
 
 ```bash
-$ npm install lightrail --save
+$ npm install litespeed --save
 # or to use the CLI
-$ npm install lightrail -g
+$ npm install litespeed -g
 ```
 
 <a name="example"></a>
 ## Example
 
 ```javascript
-const Lightrail = require('lightrail')
+const Litespeed = require('litespeed')
 
-new Lightrail({/* configuration */}).route({
+new Litespeed({/* configuration */}).route({
   method: 'GET',
   url: '/hello/:name',
   handler: (req) => {
@@ -53,12 +53,12 @@ That's it! Run this code and go to `http://localhost:8000/hello/jason`. You shou
 <a name="configuration"></a>
 ## Configuration
 
-There are several config options, all of which have optimal values by default. But they can be easily changed by passing an object to the Lightrail instance (see the example above).
+There are several config options, all of which have optimal values by default. But they can be easily changed by passing an object to the Litespeed instance (see the example above).
 
 - `name` The name of the server, set in the `Server` response header. Can be set to `false` to omit the header entirely.
 
   > Type: string, boolean  
-  > Default: `Lightrail`
+  > Default: `Litespeed`
 
 - `host` The host to run the server on. Uses the `HOST` environment variable if it exists.
 
@@ -209,7 +209,7 @@ Unlike other Node web frameworks, the response parameter is not used to actually
 <a name="asyncawait"></a>
 #### Async/Await
 
-Since handlers are based on Promises, you can easily use ES7's async/await feature. Any errors thrown within the handler are caught by Lightrail's error handler and outputted correctly. This removes the need to have a bunch of try/catch blocks (though you can still have them if you need to). Errors within sub-promises (such as the `createUser` function in the example below) will bubble up to the handler and outputted the same way.
+Since handlers are based on Promises, you can easily use ES7's async/await feature. Any errors thrown within the handler are caught by Litespeed's error handler and outputted correctly. This removes the need to have a bunch of try/catch blocks (though you can still have them if you need to). Errors within sub-promises (such as the `createUser` function in the example below) will bubble up to the handler and outputted the same way.
 
 ```javascript
 server.route({
@@ -234,7 +234,7 @@ Route preHandlers follow the exact same structure as [Handlers](#handlers), but 
 <a name="router"></a>
 ## Router
 
-Lightrail comes with a built-in router that supports segment parameters and regular expressions. This provides a quick and flexible way to define your endpoints.
+Litespeed comes with a built-in router that supports segment parameters and regular expressions. This provides a quick and flexible way to define your endpoints.
 *Note: You cannot have two routes defined with the same method and URL or a startup error will be thrown.*
 
 #### Segments
@@ -271,12 +271,12 @@ server.route({
 <a name="validation"></a>
 ## Validation
 
-A `validate` object can be used on the [routes config](#routesconfig) to run validations against the request body, query, and params. Lightrail comes with a list of predefined validations, which can be chained together. See the example below on how to use. If `stripUnknown` is enabled on the server, any values not in the `validate` object will be throw away.
+A `validate` object can be used on the [routes config](#routesconfig) to run validations against the request body, query, and params. Litespeed comes with a list of predefined validations, which can be chained together. See the example below on how to use. If `stripUnknown` is enabled on the server, any values not in the `validate` object will be throw away.
 
-The response is not sent after one failed validation. Lightrail will continue through the validations and display *all* errors in the response rather than just the first one. However, only one error from each validation chain is thrown at a time.
+The response is not sent after one failed validation. Litespeed will continue through the validations and display *all* errors in the response rather than just the first one. However, only one error from each validation chain is thrown at a time.
 
 ```javascript
-const { Validator } = require('lightrail')
+const { Validator } = require('litespeed')
 
 server.route({
   url: '/resource/:id'
@@ -359,10 +359,10 @@ Error responses are simply objects with the following structure:
 
 If a [Javascript Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) is thrown, a `500 Internal Server Error` will be returned, and **if in dev mode** (meaning `NODE_ENV` starts with `dev`), the error message will be sent to the response as well for easy debugging. All server errors (meaning statusCode is >= 500) will be logged to the console with a description and a stack trace.
 
-Lightrail comes with a list of predefined errors that accept custom messages (set as the `message` key in the response). See the example below on how to use them.
+Litespeed comes with a list of predefined errors that accept custom messages (set as the `message` key in the response). See the example below on how to use them.
 
 ```javascript
-const { Errors } = require('lightrail')
+const { Errors } = require('litespeed')
 
 server.route({
   //...
@@ -426,7 +426,7 @@ server.route({
 <a name="logging"></a>
 ## Logging
 
-By default, all Lightrail logging is turned on. This can be modified by specifying [log tags](#logtags) in the server config. Each line outputted to the console includes the server name, a timestamp, and the message. Here are the available log tags:
+By default, all Litespeed logging is turned on. This can be modified by specifying [log tags](#logtags) in the server config. Each line outputted to the console includes the server name, a timestamp, and the message. Here are the available log tags:
 
 - `server` Outputs a message when the server starts with its URL.
 - `request` Outputs the method, URL, IP address, and response code when a client makes a request.
@@ -437,10 +437,10 @@ Colors in the output can be turned off if they are causing problems by specifyin
 <a name="serverapi"></a>
 ## Server API
 
-The Lightrail server is a class that must be instantiated with the `new` keyword, and can be passed an optional object of configuration options.
+The Litespeed server is a class that must be instantiated with the `new` keyword, and can be passed an optional object of configuration options.
 
 ```javascript
-const server = new Lightrail({/* configuration */})
+const server = new Litespeed({/* configuration */})
 ```
 
 ##### server.start(callback)
@@ -516,7 +516,7 @@ server.inject({
 <a name="plugins"></a>
 ## Plugins
 
-Lightrail easily supports third-party plugins through the use of [PreHandlers](#prehandlers). To create a plugin, simply create a preHandler that exports a function returning a Promise (if async). Then it can be set as a [global preHandler](#global-prehandler) in the app using the plugin. That's it!
+Litespeed easily supports third-party plugins through the use of [PreHandlers](#prehandlers). To create a plugin, simply create a preHandler that exports a function returning a Promise (if async). Then it can be set as a [global preHandler](#global-prehandler) in the app using the plugin. That's it!
 
 You can also pass context from your plugin to other plugins as well as the route handler by using `response.pass(name, value)` (see [response](#response)). These values are then accessed with `request.context.*`.
 
@@ -525,7 +525,7 @@ You can also pass context from your plugin to other plugins as well as the route
 ###### limiter.js
 ```javascript
 const redis = require('then-redis')
-const { Errors } = require('lightrail')
+const { Errors } = require('litespeed')
 
 module.exports = async (request, response) => {
   const id = `limits:${request.info.remoteAddress}`
@@ -554,7 +554,7 @@ module.exports = async (request, response) => {
 ```javascript
 const rateLimiter = require('./limiter')
 
-new Lightrail({
+new Litespeed({
   // ...
   preHandlers: [rateLimiter]
 })

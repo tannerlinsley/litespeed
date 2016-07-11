@@ -10,7 +10,7 @@ import server from './server'
 import Validation from './validation'
 import Errors from './errors'
 
-class Lightrail {
+class Litespeed {
   constructor (opts) {
     /* set custom config options */
     updateConfig(opts)
@@ -41,6 +41,6 @@ class Lightrail {
   }
 }
 
-module.exports = Lightrail
+module.exports = Litespeed
 module.exports.Validator = Validation
 module.exports.Errors = Errors

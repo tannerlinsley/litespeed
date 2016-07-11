@@ -9,15 +9,15 @@ import { createRoute } from './router'
 export default async function () {
   const endpoints = config._routeMap
 
-  fs.ensureDirSync('.lightrail')
-  fs.outputJsonSync('.lightrail/endpoints.json', endpoints)
+  fs.ensureDirSync('.litespeed')
+  fs.outputJsonSync('.litespeed/endpoints.json', endpoints)
 
   createRoute({
     method: 'GET',
     url: config.documentationUrl,
     async handler (req, res) {
       const contents = await new Promise((resolve, reject) => {
-        fs.readJson('.lightrail/endpoints.json', 'utf8', (err, data) => {
+        fs.readJson('.litespeed/endpoints.json', 'utf8', (err, data) => {
           if (err) reject(err)
           else resolve(data)
         })

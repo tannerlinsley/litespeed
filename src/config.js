@@ -7,7 +7,7 @@ const config = {
   _isDev: () => Boolean(String(process.env.NODE_ENV).match(/dev/i)),
 
   /* set name (displays as X-Powered-By header) */
-  name: 'Lightrail',
+  name: 'Litespeed',
   name__type: ['string', 'boolean'],
   /* the host to run on */
   host: process.env.HOST || '0.0.0.0',

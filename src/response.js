@@ -3,7 +3,7 @@ import config from './config'
 
 /**
  * Responds to a request with the correct status code and headers.
- * Will auto-format the response into an Lightrail object if needed,
+ * Will auto-format the response into an Litespeed object if needed,
  * as well as stringify response objects.
  * @param {object} res - The http server response
  * @param {number} statusCode - The status code to respond with

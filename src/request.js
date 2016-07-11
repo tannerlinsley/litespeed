@@ -246,7 +246,7 @@ export function stripUnknownData (data, validations) {
  * Runs validation rules against the body, query, and param payloads.
  * Will return a 400 validation error to the user if any validation fails.
  * All validation errors will return rather than the first one.
- * @param {object} route - The lightrail route object
+ * @param {object} route - The litespeed route object
  * @param {object} data - The data to validate against
  * @returns {promise} Rejected if any errors occur
  */

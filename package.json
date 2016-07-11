@@ -1,16 +1,16 @@
 {
-  "name": "lightrail",
+  "name": "litespeed",
   "version": "0.1.1",
   "description": "A micro web framework",
   "author": "jsonmaur",
   "license": "MIT",
-  "homepage": "https://github.com/jsonmaur/lightrail#readme",
+  "homepage": "https://github.com/jsonmaur/litespeed#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jsonmaur/lightrail.git"
+    "url": "git+https://github.com/jsonmaur/litespeed.git"
   },
   "bugs": {
-    "url": "https://github.com/jsonmaur/lightrail/issues"
+    "url": "https://github.com/jsonmaur/litespeed/issues"
   },
   "engines": {
     "node": ">=4"
@@ -31,7 +31,8 @@
     "router",
     "api",
     "app",
-    "lightrail"
+    "litespeed",
+    "lightspeed"
   ],
   "files": [
     "bin/",
@@ -41,7 +42,7 @@
   ],
   "main": "lib/index.js",
   "bin": {
-    "lightrail": "bin/lightrail"
+    "litespeed": "bin/litespeed"
   },
   "scripts": {
     "test:lint": "standard --verbose | snazzy",

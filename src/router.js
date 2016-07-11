@@ -96,7 +96,7 @@ export function removeUrlQuery (url = '') {
 
 /**
  * Match a route in the route map.
- * @param {object} config - The lightrail route object
+ * @param {object} config - The litespeed route object
  * @returns {object} The route that was found
  */
 export function lookupRoute (route, getAll = false) {
@@ -119,7 +119,7 @@ export function lookupRoute (route, getAll = false) {
 
 /**
  * Creates a route and adds it to the route map.
- * @param {object} config - An lightrail route config
+ * @param {object} config - An litespeed route config
  */
 export function createRoute (route) {
   /* if route is an array of routes, run for each one */

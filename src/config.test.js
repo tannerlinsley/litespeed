@@ -3,7 +3,7 @@ import config, { updateConfig } from './config'
 
 test('config', (t) => {
   process.env.NODE_ENV = 'development'
-  t.is(config.name, 'Lightrail')
+  t.is(config.name, 'Litespeed')
   t.is(config.host, '0.0.0.0')
   t.is(config.port, 8000)
   t.true(config.stripUnknown)
