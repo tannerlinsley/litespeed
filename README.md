@@ -516,49 +516,14 @@ server.inject({
 <a name="plugins"></a>
 ## Plugins
 
-Litespeed easily supports third-party plugins through the use of [PreHandlers](#prehandlers). To create a plugin, simply create a preHandler that exports a function returning a Promise (if async). Then it can be set as a [global preHandler](#global-prehandler) in the app using the plugin. That's it!
+Litespeed easily supports third-party plugins through the use of [PreHandlers](#prehandlers). To create a plugin, simply create a preHandler that exports a function returning a Promise (if async). Then it can be set as a [global preHandler](#global-prehandler) in the app using it.
 
-You can also pass context from your plugin to other plugins as well as the route handler by using `response.pass(name, value)` (see [response](#response)). These values are then accessed with `request.context.*`.
+You can also pass context from your plugin to other plugins or to the route handler by using `response.pass(name, value)` (see [response](#response)). These values are then accessed with `request.context.*`.
 
-##### Rate Limiter Example
+#### Popular Plugins
 
-###### limiter.js
-```javascript
-const redis = require('then-redis')
-const { Errors } = require('litespeed')
-
-module.exports = async (request, response) => {
-  const id = `limits:${request.info.remoteAddress}`
-  const limit = 2500
-  const expiration = 3600 // 1 hour
-
-  const count = await redis.get(id)
-
-  response.setHeader('X-RateLimit-Limit', limit)
-  response.setHeader('X-RateLimit-Remaining', (count || limit) - 1)
-
-  if (count) {
-    if (count <= 1) {
-      throw new Errors().tooManyRequests()
-    }
-
-    await redis.decr(id)
-  } else {
-    await redis.set(id, limit)
-    await redis.expire(id, expiration)
-  }
-}
-```
-
-###### index.js
-```javascript
-const rateLimiter = require('./limiter')
-
-new Litespeed({
-  // ...
-  preHandlers: [rateLimiter]
-})
-```
+- [litespeed-jwt](https://github.com/tannerlinsley/litespeed-jwt)
+- [litespeed-limiter](https://github.com/jsonmaur/litespeed-limiter)
 
 <a name="contributing"></a>
 ## Contributing
