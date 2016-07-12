@@ -1,3 +1,4 @@
+import fs from 'fs-extra'
 import path from 'path'
 import glob from 'glob'
 import qs from 'querystring'
@@ -168,9 +169,17 @@ export function createRoute (route) {
  */
 export function getAllRoutes (data = {}) {
   /* resolve to absolute directory */
-  data.dir = path.resolve(data.cwd || process.cwd(), data.dir || 'routes/**/*.js')
+  const dir = path.resolve(data.cwd || process.cwd(), data.dir || 'routes/**/*.js')
 
-  glob.sync(data.dir).forEach((file) => {
+  const files = glob.sync(dir)
+  if (!files.length) {
+    throw new Error(`No routes were found with pattern "${data.dir}"`)
+  }
+
+  files.forEach((file) => {
+    /* allows glob pattern without an extension */
+    if (fs.statSync(file).isDirectory()) return
+
     const routes = require(file)
     createRoute(routes.default || routes)
   })
